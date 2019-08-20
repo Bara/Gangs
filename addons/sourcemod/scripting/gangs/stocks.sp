@@ -7,3 +7,14 @@ bool IsValidDatabase(Database db, const char[] error)
 
     return true;
 }
+
+void LateLoadPlayers()
+{
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i))
+        {
+            OnClientPutInServer(i);
+        }
+    }
+}
