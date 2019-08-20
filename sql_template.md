@@ -22,10 +22,11 @@ gang_ranks
 - rank - varchar(24), unique key 1
 - level - tinyint, unique key 2
 - perm_invite - tinyint
+- perm_kick - tinyint
 - perm_promote - tinyint
 - perm_demote - tinyint
-- perm_kick - tinyint
 - perm_upgrade - tinyint
+- perm_manager - tinyint
 
 gang_players
 - playerid - int, unique key 1
