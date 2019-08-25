@@ -295,7 +295,7 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
 
     int client = GetClientOfUserId(userid);
 
-    if (!IsClientInGame(client))
+    if (!IsClientValid(client))
     {
         return;
     }

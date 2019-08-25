@@ -12,7 +12,7 @@ void LateLoadPlayers()
 {
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i))
+        if (IsClientValid(i))
         {
             OnClientPutInServer(i);
         }
