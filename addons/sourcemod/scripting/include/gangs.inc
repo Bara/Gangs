@@ -6,6 +6,8 @@
 #define MAX_GANG_NAME_LENGTH 32
 #define MAX_GANG_PREFIX_LENGTH 16
 
+#define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
+
 stock bool IsClientValid(int client)
 {
     if (client > 0 && client <= MaxClients)

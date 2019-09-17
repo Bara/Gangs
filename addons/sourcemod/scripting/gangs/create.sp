@@ -11,17 +11,23 @@ void create_OnPluginStart()
 
 public Action Command_CreateGang(int client, int args)
 {
+    ShowCreateGangMenu(client);
+}
+
+void ShowCreateGangMenu(int client)
+{
     if (!IsClientValid(client))
     {
-        return Plugin_Handled;
+        return;
     }
-
-    if (g_bPrefix[client] || g_bName[client]) {}
 
     Menu menu = new Menu(Menu_CreateGang);
     menu.SetTitle("Menu - Setup your gang:\n ");
 
-    if (strlen(g_sName[client]) < 2)
+    bool bName = (strlen(g_sName[client]) > 1);
+    bool bPrefix = (strlen(g_sPrefix[client]) > 1);
+
+    if (!bName)
     {
         menu.AddItem("name", "Menu - Set Gang Name");
     }
@@ -31,21 +37,25 @@ public Action Command_CreateGang(int client, int args)
         Format(sBuffer, sizeof(sBuffer), "Menu - Set Gang Name\nName: %s", g_sName[client]);
         menu.AddItem("name", sBuffer);
     }
-    if (strlen(g_sPrefix[client]) < 2)
+    if (!bPrefix)
     {
         menu.AddItem("prefix", "Menu - Set Gang Prefix");
     }
     else
     {
         char sBuffer[128];
-        Format(sBuffer, sizeof(sBuffer), "Menu - Set Gang Prefix\nPrefix: %s", g_sPrefix[client]);
+        Format(sBuffer, sizeof(sBuffer), "Menu - Set Gang Prefix\nPrefix: %s\n ", g_sPrefix[client]);
         menu.AddItem("prefix", sBuffer);
+    }
+
+    if (bName && bPrefix)
+    {
+        menu.AddItem("create", "Create Gang");
     }
     
     menu.Display(client, MENU_TIME_FOREVER);
     menu.ExitBackButton = false;
     menu.ExitButton = true;
-    return Plugin_Continue;
 }
 
 public int Menu_CreateGang(Menu menu, MenuAction action, int client, int param)
@@ -55,15 +65,19 @@ public int Menu_CreateGang(Menu menu, MenuAction action, int client, int param)
         char sParam[12];
         menu.GetItem(param, sParam, sizeof(sParam));
 
-        if (StrEqual(sParam, "name"))
+        if (StrEqual(sParam, "name", false))
         {
             CPrintToChat(client, "Type your gang name (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", g_cNameLength.IntValue);
             g_bName[client] = true;
         }
-        else if (StrEqual(sParam, "prefix"))
+        else if (StrEqual(sParam, "prefix", false))
         {
             CPrintToChat(client, "Type your gang prefix (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", g_cPrefixLength.IntValue);
             g_bPrefix[client] = true;
+        }
+        else if (StrEqual(sParam, "create", false))
+        {
+            CheckNames(client);
         }
     }
     else if (action == MenuAction_End)
@@ -93,7 +107,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sName[client]);
 
-            if (bValid && iLen >= 2 && iLen <= g_cNameLength.IntValue)
+            if (g_bDebug && bValid && iLen >= 2 && iLen <= g_cNameLength.IntValue)
             {
                 CPrintToChat(client, "Your gang name will be: %s", g_sName[client]);   
             }
@@ -109,7 +123,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sPrefix[client]);
 
-            if (bValid && iLen >= 2 && iLen <= g_cPrefixLength.IntValue)
+            if (g_bDebug && bValid && iLen >= 2 && iLen <= g_cPrefixLength.IntValue)
             {
                 CPrintToChat(client, "Your gang prefix will be: %s", g_sPrefix[client]);   
             }
@@ -155,4 +169,23 @@ bool IsStringValid(int client, const char[] name, const char[] type, ConVar cvar
 
     delete rRegex;
     return bValid;
+}
+
+void CheckNames(int client)
+{
+    char sQuery[512];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id` FROM `gangs` WHERE `name` = \"%s\" OR `prefix` = \"%s\"", g_sName[client], g_sPrefix[client]);
+    g_dDB.Query(Query_CheckNames, sQuery, GetClientUserId(client));
+}
+
+void CreateGang(int client)
+{
+    char sQuery[1024];
+
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs` (`name`, `prefix`, `created`, `points`, `founder`) VALUES (\"%s\", \"%s\", UNIX_TIMESTAMP(), '0', \"%d\")", g_sName[client], g_sPrefix[client], g_pPlayer[client].PlayerID);
+    DataPack pack = new DataPack();
+    pack.WriteCell(GetClientUserId(client));
+    pack.WriteString(g_sName[client]);
+    pack.WriteString(g_sPrefix[client]);
+    g_dDB.Query(Query_InsertGangs, sQuery, pack);
 }

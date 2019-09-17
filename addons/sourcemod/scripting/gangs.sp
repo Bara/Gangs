@@ -7,6 +7,8 @@
 #include <multicolors>
 #include <gangs>
 
+bool g_bDebug = true;
+
 #include "gangs/structs.sp"
 #include "gangs/globals.sp"
 #include "gangs/stocks.sp"
@@ -31,6 +33,8 @@ public void OnPluginStart()
     g_cPrefixLength = AutoExecConfig_CreateConVar("gangs_max_prefix_length", "16", "Maximal length of a gang prefix.", _, true, 2.0, true, 16.0);
     g_cNameRegex = AutoExecConfig_CreateConVar("gangs_name_regex", "^[a-zA-Z0-9 _,.!#+*]+$", "Allowed characters in gang name. (Default: \"^[a-zA-Z0-9 _,.!#+*]+$\"");
     g_cPrefixRegex = AutoExecConfig_CreateConVar("gangs_prefix_regex", "^[a-zA-Z0-9 _,.!#+*]+$", "Allowed characters in gang prefix. (Default: \"^[a-zA-Z0-9 _,.!#+*]+$\"");
+    g_cStartSlots = AutoExecConfig_CreateConVar("gangs_start_slots", "4", "With how many slots should start a gang after creation?", _, true, 1.0);
+    g_cMaxLevel = AutoExecConfig_CreateConVar("gangs_max_rank_level", "10", "What should be the highest level for ranks? This could be used for max gang ranks.", _, true, 10.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 

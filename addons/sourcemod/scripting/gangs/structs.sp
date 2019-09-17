@@ -24,6 +24,17 @@ enum struct Settings {
     bool Bought;
 }
 
+enum struct Rank {
+    char Name[32];
+    int Level;
+    bool Invite;
+    bool Kick;
+    bool Promote;
+    bool Demote;
+    bool Upgrade;
+    bool Manager;
+}
+
 enum struct Ranks {
     int GangID;
     int RankID;
