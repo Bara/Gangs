@@ -102,7 +102,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
         if (g_bDebug)
         {
-            LogMessage("(AddRanksToTransaction) \"%L\": \"%s\"", client, sQuery);
+            LogMessage("(AddRanksToTransaction) Query: \"%s\"", sQuery);
         }
 
         action.AddQuery(sQuery, rank.Level);
