@@ -26,7 +26,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
     if (!FileExists(sFile))
     {
-        SetFailState("The config file \"%s\" doesn't exist!", sFile);
+        SetFailState("(AddRanksToTransaction) The config file \"%s\" doesn't exist!", sFile);
         return null;
     }
 
@@ -34,14 +34,14 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
     if (!kvConfig.ImportFromFile(sFile))
     {
-        SetFailState("Can't read \"%s\"! (ImportFromFile)", sFile);
+        SetFailState("(AddRanksToTransaction) Can't read \"%s\"! (ImportFromFile)", sFile);
         delete kvConfig;
         return null;
     }
 
     if (!kvConfig.JumpToKey("Ranks"))
     {
-        SetFailState("Can't read \"%s\"! (JumpToKey.Ranks)", sFile);
+        SetFailState("(AddRanksToTransaction) Can't read \"%s\"! (JumpToKey.Ranks)", sFile);
         delete kvConfig;
         return null;
     }
@@ -95,10 +95,16 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
         
         if (g_bDebug)
         {
-            LogMessage("Rank: %s, iLevel: %d, iInvite: %d, iKick: %d, iPromote: %d, iDemote: %d, iUpgrade: %d, iManager: %d", rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
+            LogMessage("(AddRanksToTransaction) Rank: %s, iLevel: %d, iInvite: %d, iKick: %d, iPromote: %d, iDemote: %d, iUpgrade: %d, iManager: %d", rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
         }
 
         g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_ranks` (`gangid`, `rank`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`) VALUES ('%d', \"%s\", '%d', '%d', '%d', '%d', '%d', '%d', '%d')", gangid, rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
+
+        if (g_bDebug)
+        {
+            LogMessage("(AddRanksToTransaction) \"%L\": \"%s\"", client, sQuery);
+        }
+
         action.AddQuery(sQuery, rank.Level);
     }
 

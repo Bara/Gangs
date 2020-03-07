@@ -58,6 +58,11 @@ public void OnClientPutInServer(int client)
 
     char sQuery[128];
     g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\"", g_pPlayer[client].CommunityID);
-    LogMessage("Select \"%L\": \"%s\"", client, sQuery);
+
+    if (g_bDebug)
+    {
+        LogMessage("(OnClientPutInServer) \"%L\": \"%s\"", client, sQuery);
+    }
+
     g_dDB.Query(Query_SelectPlayer, sQuery, GetClientUserId(client));
 }

@@ -175,6 +175,12 @@ void CheckNames(int client)
 {
     char sQuery[512];
     g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id` FROM `gangs` WHERE `name` = \"%s\" OR `prefix` = \"%s\"", g_sName[client], g_sPrefix[client]);
+    
+    if (g_bDebug)
+    {
+        LogMessage("(CheckNames) \"%L\": \"%s\"", client, sQuery);
+    }
+
     g_dDB.Query(Query_CheckNames, sQuery, GetClientUserId(client));
 }
 
@@ -183,6 +189,12 @@ void CreateGang(int client)
     char sQuery[1024];
 
     g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs` (`name`, `prefix`, `created`, `points`, `founder`) VALUES (\"%s\", \"%s\", UNIX_TIMESTAMP(), '0', \"%d\")", g_sName[client], g_sPrefix[client], g_pPlayer[client].PlayerID);
+    
+    if (g_bDebug)
+    {
+        LogMessage("(CreateGang) \"%L\": \"%s\"", client, sQuery);
+    }
+
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(client));
     pack.WriteString(g_sName[client]);

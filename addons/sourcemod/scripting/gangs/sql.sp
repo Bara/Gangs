@@ -106,7 +106,7 @@ void sql_OnPluginStart()
 {
     if (!SQL_CheckConfig("gangs"))
     {
-        SetFailState("Cannot find \"%s\" in your databases.cfg file", "gangs");
+        SetFailState("(sql_OnPluginStart) Cannot find \"%s\" in your databases.cfg file", "gangs");
         return;
     }
 
@@ -134,6 +134,10 @@ public void OnSQLConnect(Database db, const char[] error, any data)
 
     if (!g_dDB.SetCharset("utf8mb4"))
     {
+        if (g_bDebug)
+        {
+            LogMessage("(OnSQLConnect) Can not set charset utf8mb4");
+        }
         g_dDB.SetCharset("utf8");
     }
 
@@ -146,7 +150,11 @@ void CreateTables()
 {
     for(int i; i < sizeof(sTables); i++)
     {
-        LogMessage("Table %d: \"%s\"", (i + 1), sQueries[i]);
+        if (g_bDebug)
+        {
+            LogMessage("(CreateTables) Table %d: \"%s\"", (i + 1), sQueries[i]);
+        }
+
         g_dDB.Query(Query_CreateTable, sQueries[i], i);
     }
 }
@@ -163,7 +171,10 @@ public void Query_CreateTable(Database db, DBResultSet results, const char[] err
 
     iCount++;
 
-    LogMessage("(Query_CreateTable) Table %d of %d created.", iCount, iTables);
+    if (g_bDebug)
+    {
+        LogMessage("(Query_CreateTable) Table %d of %d created.", iCount, iTables);
+    }
 
     if (iCount == iTables)
     {
@@ -194,13 +205,21 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
         return;
     }
 
-    LogMessage("(Query_SelectPlayer) UserID: %d (Client: %d), Rows: %d", userid, client, results.RowCount);
+    if (g_bDebug)
+    {
+        LogMessage("(Query_SelectPlayer) UserID: %d (Client: %d), Rows: %d", userid, client, results.RowCount);
+    }
 
     if (results.RowCount == 0)
     {
         char sQuery[512];
         g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `players` (`communityid`, `name`, `firstseen`, `lastseen`) VALUES (\"%s\", \"%N\", UNIX_TIMESTAMP(), UNIX_TIMESTAMP())", g_pPlayer[client].CommunityID, client);
-        LogMessage("Insert \"%L\": \"%s\"", client, sQuery);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_SelectPlayer) \"%L\": \"%s\"", client, sQuery);
+        }
+
         g_dDB.Query(Query_InsertPlayer, sQuery, userid);
     }
     else
@@ -211,12 +230,17 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
 
             char sQuery[512];
             g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `players` SET `name` = \"%N\", `lastseen` = UNIX_TIMESTAMP() WHERE `communityid` = \"%s\"", client, g_pPlayer[client].CommunityID);
-            LogMessage("Update \"%L\"<%d>: \"%s\"", client, g_pPlayer[client].PlayerID, sQuery);
+
+            if (g_bDebug)
+            {
+                LogMessage("(Query_SelectPlayer) Update \"%L\"<%d>: \"%s\"", client, g_pPlayer[client].PlayerID, sQuery);
+            }
+
             g_dDB.Query(Query_UpdatePlayer, sQuery);
         }
         else
         {
-            LogError("we have more rows for \"%N\". Query stopped!", client);
+            LogError("(Query_SelectPlayer) We have more rows for \"%N\". Query stopped!", client);
             return;
         }
     }
@@ -297,6 +321,7 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
     if (IsClientValid(client))
     {
         int iGang = results.InsertId;
+
         if (g_bDebug)
         {
             CPrintToChat(client, "Your gang %s (%d) has been added to \"gangs\"-table!", sName, iGang);
@@ -315,6 +340,12 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
 
         char sQuery[1024];
         g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_settings` (`gangid`, `key`, `value`, `purchased`) VALUES ('%d', \"slots\", \"%d\", '1')", iGang, Config.StartSlots.IntValue);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_InsertGangs) \"%L\": \"%s\"", client, sQuery);
+        }
+
         action.AddQuery(sQuery, -1);
 
         Settings setting;
@@ -392,7 +423,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
             {
                 if (g_bDebug)
                 {
-                    LogMessage("ID for Rank Owner should be %d.", iRank);
+                    LogMessage("(TXN_OnSuccess) ID for Rank Owner should be %d.", iRank);
                 }
 
                 pack = new DataPack();
@@ -404,6 +435,12 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
 
                 char sQuery[512];
                 g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d')", g_pPlayer[client].PlayerID, gangid, iRank);
+
+                if (g_bDebug)
+                {
+                    LogMessage("(TXN_OnSuccess) \"%L\": \"%s\"", client, sQuery);
+                }
+
                 g_dDB.Query(Query_InsertPlayerOwner, sQuery, pack);
             }
         }
