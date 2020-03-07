@@ -488,7 +488,6 @@ public void Query_InsertPlayerOwner(Database db, DBResultSet results, const char
     {
         CPrintToChatAll("%N has been created a new Gang! Name: %s, Prefix: %s", client, sName, sPrefix);
 
-        g_pPlayer[client].InGang = true;
         g_pPlayer[client].GangID = gangid;
         g_pPlayer[client].Rank = rankid;
     }

@@ -52,7 +52,6 @@ public void OnClientPutInServer(int client)
     }
 
     g_pPlayer[client].PlayerID = -1;
-    g_pPlayer[client].InGang = false;
     g_pPlayer[client].GangID = -1;
     g_pPlayer[client].Rank = -1;
 
