@@ -301,7 +301,7 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
         {
             CPrintToChat(client, "Your gang %s (%d) has been added to \"gangs\"-table!", sName, iGang);
         }
-        
+
         Gang gang;
         gang.GangID = iGang;
         gang.Created = GetTime();
@@ -317,11 +317,19 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
         g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_settings` (`gangid`, `key`, `value`, `purchased`) VALUES ('%d', \"slots\", \"%d\", '1')", iGang, g_cStartSlots.IntValue);
         action.AddQuery(sQuery, -1);
 
-        AddRanksToTransaction(iGang, action);
+        Settings setting;
+        setting.GangID = iGang;
+        Format(setting.Key, sizeof(Settings::Key), "slots");
+        g_cStartSlots.GetString(setting.Value, sizeof(Settings::Value));
+        setting.Bought = true;
+        g_aGangSettings.PushArray(setting, sizeof(setting));
+
+        ArrayList aRanks = AddRanksToTransaction(iGang, action);
 
         pack = new DataPack();
         pack.WriteCell(userid);
         pack.WriteCell(iGang);
+        pack.WriteCell(aRanks);
         pack.WriteString(gang.Name);
         pack.WriteString(gang.Prefix);
         g_dDB.Execute(action, TXN_OnSuccess, TXN_OnError, pack);
@@ -342,27 +350,51 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
             LogMessage("(TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
         }
 
-        if (queryData[i] == g_cMaxLevel.IntValue)
+        pack.Reset();
+        int userid = pack.ReadCell();
+        int gangid = pack.ReadCell();
+        ArrayList aRanks = view_as<ArrayList>(pack.ReadCell());
+        char sName[32];
+        pack.ReadString(sName, sizeof(sName));
+        char sPrefix[16];
+        pack.ReadString(sPrefix, sizeof(sPrefix));
+        delete pack;
+
+        if (queryData[i] >= 1 && queryData[i] <= g_cMaxLevel.IntValue)
         {
             int iRank = results[i].InsertId;
-            if (g_bDebug)
-            {
-                LogMessage("ID for Rank Owner should be %d.", iRank);
-            }
 
-            pack.Reset();
-            int userid = pack.ReadCell();
-            int gangid = pack.ReadCell();
-            char sName[32];
-            pack.ReadString(sName, sizeof(sName));
-            char sPrefix[16];
-            pack.ReadString(sPrefix, sizeof(sPrefix));
-            delete pack;
+            Ranks rRank;
+            for (int j = 0; j < aRanks.Length; j++)
+            {
+                Rank rank;
+                aRanks.GetArray(j, rank, sizeof(rank));
+
+                if (queryData[i] == rank.Level)
+                {
+                    rRank.GangID = gangid;
+                    rRank.RankID = iRank;
+                    strcopy(rRank.Name, sizeof(Ranks::Name), rank.Name);
+                    rRank.Level = rank.Level;
+                    rRank.Invite = rank.Invite;
+                    rRank.Kick = rank.Kick;
+                    rRank.Promote = rank.Promote;
+                    rRank.Demote = rank.Demote;
+                    rRank.Upgrade = rank.Upgrade;
+                    rRank.Manager = rank.Manager;
+                    g_aGangRanks.PushArray(rRank, sizeof(rRank));
+                }
+            }
 
             int client = GetClientOfUserId(userid);
 
-            if (IsClientValid(client))
+            if (IsClientValid(client) && queryData[i] == g_cMaxLevel.IntValue)
             {
+                if (g_bDebug)
+                {
+                    LogMessage("ID for Rank Owner should be %d.", iRank);
+                }
+
                 pack = new DataPack();
                 pack.WriteCell(userid);
                 pack.WriteCell(gangid);
@@ -374,8 +406,6 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
                 g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d')", g_pPlayer[client].PlayerID, gangid, iRank);
                 g_dDB.Query(Query_InsertPlayerOwner, sQuery, pack);
             }
-
-            break;
         }
     }
 

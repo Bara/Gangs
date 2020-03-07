@@ -17,11 +17,11 @@ bool g_bDebug = true;
 
 public Plugin myinfo =
 {
-    name = "Gangs", 
-    author = "Bara", 
-    description = "", 
-    version = "1.0.0", 
-    url = "github.com/Bara"
+    name = GANGS_PLUGIN_NAME, 
+    author = GANGS_PLUGIN_AUTHOR, 
+    description = GANGS_PLUGIN_DESCRIPTION, 
+    version = GANGS_PLUGIN_VERSION, 
+    url = GANGS_PLUGIN_URL
 };
 
 public void OnPluginStart()

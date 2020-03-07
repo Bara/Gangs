@@ -19,7 +19,7 @@ void LateLoadPlayers()
     }
 }
 
-void AddRanksToTransaction(int gangid, Transaction action)
+ArrayList AddRanksToTransaction(int gangid, Transaction action)
 {
     char sFile[PLATFORM_MAX_PATH + 1];
     BuildPath(Path_SM, sFile, sizeof(sFile), "configs/gangs/default_settings.cfg");
@@ -27,7 +27,7 @@ void AddRanksToTransaction(int gangid, Transaction action)
     if (!FileExists(sFile))
     {
         SetFailState("The config file \"%s\" doesn't exist!", sFile);
-        return;
+        return null;
     }
 
     KeyValues kvConfig = new KeyValues("Gangs");
@@ -36,14 +36,14 @@ void AddRanksToTransaction(int gangid, Transaction action)
     {
         SetFailState("Can't read \"%s\"! (ImportFromFile)", sFile);
         delete kvConfig;
-        return;
+        return null;
     }
 
     if (!kvConfig.JumpToKey("Ranks"))
     {
         SetFailState("Can't read \"%s\"! (JumpToKey.Ranks)", sFile);
         delete kvConfig;
-        return;
+        return null;
     }
 
     ArrayList aRanks = new ArrayList(sizeof(Rank));
@@ -103,5 +103,5 @@ void AddRanksToTransaction(int gangid, Transaction action)
     }
 
     delete kvConfig;
-    delete aRanks;
+    return aRanks;
 }

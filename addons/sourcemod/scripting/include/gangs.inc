@@ -3,6 +3,12 @@
 #endif
 #define _gangs_included
 
+#define GANGS_PLUGIN_NAME "Gangs"
+#define GANGS_PLUGIN_AUTHOR "Bara"
+#define GANGS_PLUGIN_DESCRIPTION ""
+#define GANGS_PLUGIN_VERSION "<VERSION>"
+#define GANGS_PLUGIN_URL "https://github.com/Bara/Gangs"
+
 #define MAX_GANG_NAME_LENGTH 32
 #define MAX_GANG_PREFIX_LENGTH 16
 
