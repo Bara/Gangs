@@ -82,7 +82,7 @@ jobs:
       - name: Upload latest package
         run: |
           mv Gangs.${{ env.PLUGIN_VERSION }}.zip Gangs.latest.${{ matrix.SM_VERSION }}.zip
-          url -T Gangs.latest.${{ matrix.SM_VERSION }}.zip -u ${{ secrets.FTP_NAME }}:${{ secrets.FTP_PASS }} ftp://${{ secrets.FTP_HOST }}/downloads/
+          curl -T Gangs.latest.${{ matrix.SM_VERSION }}.zip -u ${{ secrets.FTP_NAME }}:${{ secrets.FTP_PASS }} ftp://${{ secrets.FTP_HOST }}/downloads/
         working-directory: ./build
 
       - name: Update version
