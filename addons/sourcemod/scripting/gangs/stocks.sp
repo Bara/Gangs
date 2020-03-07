@@ -22,7 +22,7 @@ void LateLoadPlayers()
 ArrayList AddRanksToTransaction(int gangid, Transaction action)
 {
     char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/gangs/default_settings.cfg");
+    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/gangs/default_ranks.cfg");
 
     if (!FileExists(sFile))
     {
