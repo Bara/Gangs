@@ -314,13 +314,13 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
         Transaction action = new Transaction();
 
         char sQuery[1024];
-        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_settings` (`gangid`, `key`, `value`, `purchased`) VALUES ('%d', \"slots\", \"%d\", '1')", iGang, g_cStartSlots.IntValue);
+        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_settings` (`gangid`, `key`, `value`, `purchased`) VALUES ('%d', \"slots\", \"%d\", '1')", iGang, Config.StartSlots.IntValue);
         action.AddQuery(sQuery, -1);
 
         Settings setting;
         setting.GangID = iGang;
         Format(setting.Key, sizeof(Settings::Key), "slots");
-        g_cStartSlots.GetString(setting.Value, sizeof(Settings::Value));
+        Config.StartSlots.GetString(setting.Value, sizeof(Settings::Value));
         setting.Bought = true;
         g_aGangSettings.PushArray(setting, sizeof(setting));
 
@@ -360,7 +360,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
         pack.ReadString(sPrefix, sizeof(sPrefix));
         delete pack;
 
-        if (queryData[i] >= 1 && queryData[i] <= g_cMaxLevel.IntValue)
+        if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
         {
             int iRank = results[i].InsertId;
 
@@ -388,7 +388,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
 
             int client = GetClientOfUserId(userid);
 
-            if (IsClientValid(client) && queryData[i] == g_cMaxLevel.IntValue)
+            if (IsClientValid(client) && queryData[i] == Config.MaxLevel.IntValue)
             {
                 if (g_bDebug)
                 {

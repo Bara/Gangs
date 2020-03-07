@@ -50,7 +50,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
     Rank rank;
     Format(rank.Name, sizeof(Rank::Name), "Owner");
-    rank.Level = g_cMaxLevel.IntValue;
+    rank.Level = Config.MaxLevel.IntValue;
     rank.Invite = true;
     rank.Kick = true;
     rank.Promote = true;
@@ -72,7 +72,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
             rank.Upgrade = view_as<bool>(kvConfig.GetNum("Upgrade", -1));
             rank.Manager = view_as<bool>(kvConfig.GetNum("Manager", -1));
 
-            if (rank.Level < g_cMaxLevel.IntValue)
+            if (rank.Level < Config.MaxLevel.IntValue)
             {
                 aRanks.PushArray(rank, sizeof(rank));
             }

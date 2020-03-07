@@ -67,12 +67,12 @@ public int Menu_CreateGang(Menu menu, MenuAction action, int client, int param)
 
         if (StrEqual(sParam, "name", false))
         {
-            CPrintToChat(client, "Type your gang name (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", g_cNameLength.IntValue);
+            CPrintToChat(client, "Type your gang name (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.NameLength.IntValue);
             g_bName[client] = true;
         }
         else if (StrEqual(sParam, "prefix", false))
         {
-            CPrintToChat(client, "Type your gang prefix (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", g_cPrefixLength.IntValue);
+            CPrintToChat(client, "Type your gang prefix (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.PrefixLength.IntValue);
             g_bPrefix[client] = true;
         }
         else if (StrEqual(sParam, "create", false))
@@ -103,11 +103,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             TrimString(g_sName[client]);
             StripQuotes(g_sName[client]);
 
-            bool bValid = IsStringValid(client, g_sName[client], "name", g_cNameRegex);
+            bool bValid = IsStringValid(client, g_sName[client], "name", Config.NameRegex);
 
             int iLen = strlen(g_sName[client]);
 
-            if (g_bDebug && bValid && iLen >= 2 && iLen <= g_cNameLength.IntValue)
+            if (g_bDebug && bValid && iLen >= 2 && iLen <= Config.NameLength.IntValue)
             {
                 CPrintToChat(client, "Your gang name will be: %s", g_sName[client]);   
             }
@@ -119,11 +119,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             TrimString(g_sPrefix[client]);
             StripQuotes(g_sPrefix[client]);
 
-            bool bValid = IsStringValid(client, g_sPrefix[client], "prefix", g_cPrefixRegex);
+            bool bValid = IsStringValid(client, g_sPrefix[client], "prefix", Config.PrefixRegex);
 
             int iLen = strlen(g_sPrefix[client]);
 
-            if (g_bDebug && bValid && iLen >= 2 && iLen <= g_cPrefixLength.IntValue)
+            if (g_bDebug && bValid && iLen >= 2 && iLen <= Config.PrefixLength.IntValue)
             {
                 CPrintToChat(client, "Your gang prefix will be: %s", g_sPrefix[client]);   
             }
