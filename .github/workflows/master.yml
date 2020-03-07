@@ -55,10 +55,10 @@ jobs:
           mkdir -p $PLUGINS_PATH
           rsync -av --include='*/' --include="*.smx" --exclude="*" --prune-empty-dirs --remove-source-files $SCRIPTS_PATH/ $PLUGINS_PATH/
 
-      - name: Move folders (addons, materials, models, particles, sound) to build
+      - name: Move addons folder to build
         run: |
           mkdir build
-          mv ./{addons,materials,models,particles,sound} build/
+          mv ./addons build/
 
       - name: Add LICENSE and CREDITS.md to build package
         run: |
