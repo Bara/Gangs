@@ -47,6 +47,7 @@ enum struct Ranks {
 }
 
 enum struct Configs {
+    ConVar PluginPrefix;
     ConVar NameLength;
     ConVar PrefixLength;
     ConVar NameRegex;

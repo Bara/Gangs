@@ -1,8 +1,8 @@
 static bool g_bName[MAXPLAYERS + 1] = { false, ... };
 static bool g_bPrefix[MAXPLAYERS + 1] = { false, ... };
 
-static char g_sName[MAXPLAYERS + 1][MAX_GANG_NAME_LENGTH];
-static char g_sPrefix[MAXPLAYERS + 1][MAX_GANG_PREFIX_LENGTH];
+static char g_sName[MAXPLAYERS + 1][MAX_GANGS_NAME_LENGTH];
+static char g_sPrefix[MAXPLAYERS + 1][MAX_GANGS_PREFIX_LENGTH];
 
 void create_OnPluginStart()
 {

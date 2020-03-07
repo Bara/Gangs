@@ -9,8 +9,8 @@
 #define GANGS_PLUGIN_VERSION "<VERSION>"
 #define GANGS_PLUGIN_URL "https://github.com/Bara/Gangs"
 
-#define MAX_GANG_NAME_LENGTH 32
-#define MAX_GANG_PREFIX_LENGTH 16
+#define MAX_GANGS_NAME_LENGTH 32
+#define MAX_GANGS_PREFIX_LENGTH 16
 
 #define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
 

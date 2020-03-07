@@ -34,7 +34,9 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-    CSetPrefix("{green}[Gangs]{default}");
+    char sBuffer[PLATFORM_MAX_PATH];
+    Config.PluginPrefix.GetString(sBuffer, sizeof(sBuffer));
+    CSetPrefix(sBuffer);
 }
 
 public void OnClientPutInServer(int client)
