@@ -21,6 +21,11 @@ void ShowCreateGangMenu(int client)
         return;
     }
 
+    if (g_pPlayer[client].GangID != -1)
+    {
+        return;
+    }
+
     Menu menu = new Menu(Menu_CreateGang);
     menu.SetTitle("Menu - Setup your gang:\n ");
 
@@ -98,7 +103,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
         if (g_bName[client])
         {
-            strcopy(g_sName[client], sizeof(g_sName[]), message);
+            Format(g_sName[client], sizeof(g_sName[]), message);
 
             TrimString(g_sName[client]);
             StripQuotes(g_sName[client]);
@@ -107,14 +112,26 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sName[client]);
 
-            if (g_bDebug && bValid && iLen >= 2 && iLen <= Config.NameLength.IntValue)
+            if (bValid && iLen >= 2 && iLen <= Config.NameLength.IntValue)
             {
-                CPrintToChat(client, "Your gang name will be: %s", g_sName[client]);   
+                if (g_bDebug)
+                {
+                    CPrintToChat(client, "Your gang name will be: %s", g_sName[client]);
+                }
+            }
+            else
+            {
+                Format(g_sName[client], sizeof(g_sName[]), "");
+
+                if (g_bDebug)
+                {
+                    CPrintToChat(client, "Gang prefix invalid.");
+                }
             }
         }
         else if (g_bPrefix[client])
         {
-            strcopy(g_sPrefix[client], sizeof(g_sPrefix[]), message);
+            Format(g_sPrefix[client], sizeof(g_sPrefix[]), message);
 
             TrimString(g_sPrefix[client]);
             StripQuotes(g_sPrefix[client]);
@@ -123,9 +140,21 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sPrefix[client]);
 
-            if (g_bDebug && bValid && iLen >= 2 && iLen <= Config.PrefixLength.IntValue)
+            if (bValid && iLen >= 2 && iLen <= Config.PrefixLength.IntValue)
             {
-                CPrintToChat(client, "Your gang prefix will be: %s", g_sPrefix[client]);   
+                if (g_bDebug)
+                {
+                    CPrintToChat(client, "Your gang prefix will be: %s", g_sPrefix[client]);
+                }
+            }
+            else
+            {
+                Format(g_sPrefix[client], sizeof(g_sPrefix[]), "");
+
+                if (g_bDebug)
+                {
+                    CPrintToChat(client, "Gang prefix invalid.");
+                }
             }
         }
 
