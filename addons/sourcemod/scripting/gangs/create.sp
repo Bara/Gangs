@@ -228,5 +228,5 @@ void CreateGang(int client)
     pack.WriteCell(GetClientUserId(client));
     pack.WriteString(g_sName[client]);
     pack.WriteString(g_sPrefix[client]);
-    g_dDB.Query(Query_InsertGangs, sQuery, pack);
+    g_dDB.Query(Query_Insert_Gangs, sQuery, pack);
 }

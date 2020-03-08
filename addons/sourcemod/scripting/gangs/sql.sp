@@ -1,4 +1,4 @@
-static int iTables = 8;
+static int iTables = 9;
 static int iCount = 0;
 
 static char sQueries[][1024] = {
@@ -58,6 +58,15 @@ static char sQueries[][1024] = {
         "UNIQUE KEY (`playerid`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
+    "CREATE TABLE IF NOT EXISTS `gang_logs` (" ...
+        "`id` INT NOT NULL AUTO_INCREMENT," ...
+        "`gangid` INT NOT NULL," ...
+        "`time` INT NOT NULL," ...
+        "`playerid` INT NOT NULL," ...
+        "`type` VARCHAR(64) COLLATE utf8mb4_unicode_ci NOT NULL," ...
+        "PRIMARY KEY (`id`)" ...
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
     "CREATE TABLE IF NOT EXISTS `gang_logs_settings` (" ...
         "`id` INT NOT NULL AUTO_INCREMENT," ...
         "`gangid` INT NOT NULL," ...
@@ -92,7 +101,7 @@ static char sQueries[][1024] = {
 
 static char sTables[][] = {
     "players", "gangs", "gang_settings", "gang_ranks", "gang_players",
-    "gang_logs_settings", "gang_logs_players", "gang_logs_points"
+    "gang_logs", "gang_logs_settings", "gang_logs_players", "gang_logs_points"
 };
 
 void sql_OnPluginStart()
@@ -219,7 +228,7 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
             LogMessage("(Query_SelectPlayer) \"%L\": \"%s\"", client, sQuery);
         }
 
-        g_dDB.Query(Query_InsertPlayer, sQuery, userid);
+        g_dDB.Query(Query_Insert_Player, sQuery, userid);
     }
     else
     {
@@ -245,11 +254,11 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
     }
 }
 
-public void Query_InsertPlayer(Database db, DBResultSet results, const char[] error, int userid)
+public void Query_Insert_Player(Database db, DBResultSet results, const char[] error, int userid)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_InsertPlayer) Error: %s", error);
+        SetFailState("(Query_Insert_Player) Error: %s", error);
         return;
     }
 
@@ -296,11 +305,11 @@ public void Query_CheckNames(Database db, DBResultSet results, const char[] erro
     }
 }
 
-public void Query_InsertGangs(Database db, DBResultSet results, const char[] error, DataPack pack)
+public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] error, DataPack pack)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_InsertGangs) Error: %s", error);
+        SetFailState("(Query_Insert_Gangs) Error: %s", error);
         delete pack;
         return;
     }
@@ -343,7 +352,7 @@ public void Query_InsertGangs(Database db, DBResultSet results, const char[] err
 
         if (g_bDebug)
         {
-            LogMessage("(Query_InsertGangs) \"%L\": \"%s\"", client, sQuery);
+            LogMessage("(Query_Insert_Gangs) \"%L\": \"%s\"", client, sQuery);
         }
 
         action.AddQuery(sQuery, -1);
@@ -441,7 +450,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
                     LogMessage("(TXN_OnSuccess) \"%L\": \"%s\"", client, sQuery);
                 }
 
-                g_dDB.Query(Query_InsertPlayerOwner, sQuery, pack);
+                g_dDB.Query(Query_Insert_PlayerOwner, sQuery, pack);
             }
         }
     }
@@ -455,11 +464,11 @@ public void TXN_OnError(Database db, DataPack pack, int numQueries, const char[]
     delete pack;
 }
 
-public void Query_InsertPlayerOwner(Database db, DBResultSet results, const char[] error, DataPack pack)
+public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const char[] error, DataPack pack)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_InsertPlayerOwner) Error: %s", error);
+        SetFailState("(Query_Insert_PlayerOwner) Error: %s", error);
         delete pack;
         return;
     }
@@ -489,7 +498,26 @@ public void Query_InsertPlayerOwner(Database db, DBResultSet results, const char
     {
         CPrintToChatAll("%N has been created a new Gang! Name: %s, Prefix: %s", client, sName, sPrefix);
 
+        char sQuery[512];
+        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs` (`gangid`, `time`, `playerid`, `type`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', \"create\");", gangid, g_pPlayer[client].PlayerID);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Insert_Player) \"%L\": \"%s\"", client, sQuery);
+        }
+
+        g_dDB.Query(Query_Insert_GangLogs, sQuery);
+
         g_pPlayer[client].GangID = gangid;
         g_pPlayer[client].Rank = rankid;
+    }
+}
+
+public void Query_Insert_GangLogs(Database db, DBResultSet results, const char[] error, any data)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_GangLogs) Error: %s", error);
+        return;
     }
 }
