@@ -72,12 +72,12 @@ public int Menu_CreateGang(Menu menu, MenuAction action, int client, int param)
 
         if (StrEqual(sParam, "name", false))
         {
-            CPrintToChat(client, "Type your gang name (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.NameLength.IntValue);
+            CPrintToChat(client, "Type your gang name (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.NameMinLength.IntValue, Config.NameMaxLength.IntValue);
             g_bName[client] = true;
         }
         else if (StrEqual(sParam, "prefix", false))
         {
-            CPrintToChat(client, "Type your gang prefix (max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.PrefixLength.IntValue);
+            CPrintToChat(client, "Type your gang prefix (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.PrefixMinLength.IntValue, Config.PrefixMaxLength.IntValue);
             g_bPrefix[client] = true;
         }
         else if (StrEqual(sParam, "create", false))
@@ -112,7 +112,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sName[client]);
 
-            if (bValid && iLen >= 2 && iLen <= Config.NameLength.IntValue)
+            if (bValid && iLen >= Config.NameMinLength.IntValue && iLen <= Config.NameMaxLength.IntValue)
             {
                 if (g_bDebug)
                 {
@@ -140,7 +140,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sPrefix[client]);
 
-            if (bValid && iLen >= 2 && iLen <= Config.PrefixLength.IntValue)
+            if (bValid && iLen >= Config.PrefixMinLength.IntValue && iLen <= Config.PrefixMaxLength.IntValue)
             {
                 if (g_bDebug)
                 {
