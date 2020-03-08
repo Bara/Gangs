@@ -108,11 +108,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             TrimString(g_sName[client]);
             StripQuotes(g_sName[client]);
 
-            bool bValid = IsStringValid(client, g_sName[client], "name", Config.NameRegex);
+            bool bRegex = IsStringValid(client, g_sName[client], "name", Config.NameRegex);
 
             int iLen = strlen(g_sName[client]);
 
-            if (bValid && iLen >= Config.NameMinLength.IntValue && iLen <= Config.NameMaxLength.IntValue)
+            if (bRegex && iLen >= Config.NameMinLength.IntValue && iLen <= Config.NameMaxLength.IntValue)
             {
                 if (g_bDebug)
                 {
@@ -136,11 +136,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             TrimString(g_sPrefix[client]);
             StripQuotes(g_sPrefix[client]);
 
-            bool bValid = IsStringValid(client, g_sPrefix[client], "prefix", Config.PrefixRegex);
+            bool bRegex = IsStringValid(client, g_sPrefix[client], "prefix", Config.PrefixRegex);
 
             int iLen = strlen(g_sPrefix[client]);
 
-            if (bValid && iLen >= Config.PrefixMinLength.IntValue && iLen <= Config.PrefixMaxLength.IntValue)
+            if (bRegex && iLen >= Config.PrefixMinLength.IntValue && iLen <= Config.PrefixMaxLength.IntValue)
             {
                 if (g_bDebug)
                 {
@@ -189,15 +189,15 @@ bool IsStringValid(int client, const char[] name, const char[] type, ConVar cvar
     cvar.GetString(sRegex, sizeof(sRegex));
     Regex rRegex = new Regex(sRegex);
 
-    bool bValid = true;
+    bool bRegex = true;
     if(rRegex.Match(name) != 1)
     {
         CPrintToChat(client, "Chat - We found invalid chars in your gang %s!", type);
-        bValid = false;
+        bRegex = false;
     }
 
     delete rRegex;
-    return bValid;
+    return bRegex;
 }
 
 void CheckNames(int client)
