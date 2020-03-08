@@ -203,7 +203,7 @@ bool IsStringValid(int client, const char[] name, const char[] type, ConVar cvar
 void CheckNames(int client)
 {
     char sQuery[512];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id` FROM `gangs` WHERE `name` = \"%s\" OR `prefix` = \"%s\"", g_sName[client], g_sPrefix[client]);
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id` FROM `gangs` WHERE `name` = \"%s\" OR `prefix` = \"%s\";", g_sName[client], g_sPrefix[client]);
     
     if (g_bDebug)
     {
@@ -217,7 +217,7 @@ void CreateGang(int client)
 {
     char sQuery[1024];
 
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs` (`name`, `prefix`, `created`, `points`, `founder`) VALUES (\"%s\", \"%s\", UNIX_TIMESTAMP(), '0', \"%d\")", g_sName[client], g_sPrefix[client], g_pPlayer[client].PlayerID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs` (`name`, `prefix`, `created`, `points`, `founder`) VALUES (\"%s\", \"%s\", UNIX_TIMESTAMP(), '0', \"%d\");", g_sName[client], g_sPrefix[client], g_pPlayer[client].PlayerID);
     
     if (g_bDebug)
     {

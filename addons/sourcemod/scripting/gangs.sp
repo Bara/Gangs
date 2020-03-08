@@ -15,6 +15,7 @@ bool g_bDebug = true;
 #include "gangs/stocks.sp"
 #include "gangs/sql.sp"
 #include "gangs/create.sp"
+#include "gangs/menu.sp"
 
 public Plugin myinfo =
 {
@@ -30,6 +31,7 @@ public void OnPluginStart()
     configs_OnPluginStart();
     sql_OnPluginStart();
     create_OnPluginStart();
+    menu_OnPluginStart();
 }
 
 public void OnConfigsExecuted()
@@ -56,7 +58,7 @@ public void OnClientPutInServer(int client)
     g_pPlayer[client].Rank = -1;
 
     char sQuery[128];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\"", g_pPlayer[client].CommunityID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\";", g_pPlayer[client].CommunityID);
 
     if (g_bDebug)
     {

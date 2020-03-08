@@ -13,6 +13,7 @@
 #define MAX_GANGS_PREFIX_LENGTH 16
 
 #define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
+#define LoopArray(%1,%2) for (int %2 = 0; %2 < %1.Length; %2++)
 
 stock bool IsClientValid(int client)
 {

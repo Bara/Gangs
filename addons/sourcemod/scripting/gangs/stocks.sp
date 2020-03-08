@@ -98,7 +98,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
             LogMessage("(AddRanksToTransaction) Rank: %s, iLevel: %d, iInvite: %d, iKick: %d, iPromote: %d, iDemote: %d, iUpgrade: %d, iManager: %d", rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
         }
 
-        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_ranks` (`gangid`, `rank`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`) VALUES ('%d', \"%s\", '%d', '%d', '%d', '%d', '%d', '%d', '%d')", gangid, rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
+        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_ranks` (`gangid`, `rank`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`) VALUES ('%d', \"%s\", '%d', '%d', '%d', '%d', '%d', '%d', '%d');", gangid, rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
 
         if (g_bDebug)
         {
@@ -110,4 +110,38 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
     delete kvConfig;
     return aRanks;
+}
+
+bool GetGangName(int id, char[] name, int length)
+{
+    LoopArray(g_aGangs, i)
+    {
+        Gang gang;
+        g_aGangs.GetArray(i, gang, sizeof(Gang));
+
+        if (gang.GangID == id)
+        {
+            Format(name, length, gang.Name);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GetGangPrefix(int id, char[] name, int length)
+{
+    LoopArray(g_aGangs, i)
+    {
+        Gang gang;
+        g_aGangs.GetArray(i, gang, sizeof(Gang));
+
+        if (gang.GangID == id)
+        {
+            Format(name, length, gang.Prefix);
+            return true;
+        }
+    }
+
+    return false;
 }
