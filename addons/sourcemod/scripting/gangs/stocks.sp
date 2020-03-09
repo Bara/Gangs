@@ -145,3 +145,16 @@ bool GetGangPrefix(int id, char[] name, int length)
 
     return false;
 }
+
+void InsertGangLogs(int client, int gangid, const char[] type)
+{
+    char sQuery[512];
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs` (`gangid`, `time`, `playerid`, `type`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', \"%s\");", gangid, g_pPlayer[client].PlayerID, type);
+
+    if (g_bDebug)
+    {
+        LogMessage("(Query_Insert_Player - %s) \"%L\": \"%s\"", type, client, sQuery);
+    }
+
+    g_dDB.Query(Query_Insert_GangLogs, sQuery);
+}
