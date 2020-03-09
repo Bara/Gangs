@@ -383,22 +383,22 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
         LogMessage("(TXN_OnSuccess) numQueries: %d", numQueries);
     }
 
-    for (int i = 0; i <= numQueries; i++)
+    pack.Reset();
+    int userid = pack.ReadCell();
+    int gangid = pack.ReadCell();
+    ArrayList aRanks = view_as<ArrayList>(pack.ReadCell());
+    char sName[32];
+    pack.ReadString(sName, sizeof(sName));
+    char sPrefix[16];
+    pack.ReadString(sPrefix, sizeof(sPrefix));
+    delete pack;
+
+    for (int i = 0; i < numQueries; i++)
     {
         if (g_bDebug)
         {
             LogMessage("(TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
         }
-
-        pack.Reset();
-        int userid = pack.ReadCell();
-        int gangid = pack.ReadCell();
-        ArrayList aRanks = view_as<ArrayList>(pack.ReadCell());
-        char sName[32];
-        pack.ReadString(sName, sizeof(sName));
-        char sPrefix[16];
-        pack.ReadString(sPrefix, sizeof(sPrefix));
-        delete pack;
 
         if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
         {

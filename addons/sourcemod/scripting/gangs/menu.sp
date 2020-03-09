@@ -28,8 +28,14 @@ void ShowGangMenu(int client)
     GetGangName(g_pPlayer[client].GangID, sName, sizeof(sName));
     GetGangPrefix(g_pPlayer[client].GangID, sPrefix, sizeof(sPrefix));
 
+    if (g_bDebug)
+    {
+        PrintToChat(client, "(ShowGangMenu) Name: %s, Prefix: %s", sName, sPrefix);
+    }
+
     Menu menu = new Menu(Menu_GangMain);
     menu.SetTitle("%s | %s", sPrefix, sName);
+    menu.AddItem("", "Nothing yet...", ITEMDRAW_DISABLED);
     menu.ExitBackButton = false;
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);

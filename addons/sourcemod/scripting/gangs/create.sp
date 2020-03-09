@@ -6,7 +6,7 @@ static char g_sPrefix[MAXPLAYERS + 1][MAX_GANGS_PREFIX_LENGTH];
 
 void create_OnPluginStart()
 {
-    RegConsoleCmd("sm_creategang", Command_CreateGang);
+    RegConsoleCmd("sm_gcreate", Command_CreateGang);
 }
 
 public Action Command_CreateGang(int client, int args)
@@ -112,6 +112,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
             int iLen = strlen(g_sName[client]);
 
+            if (g_bDebug)
+            {
+                PrintToChat(client, "[OnClientSayCommand] (Name) bRegex: %d, Min: %d (iLen: %d, CVar: %d), Max: %d (iLen: %d, CVar: %d)", bRegex, (iLen >= Config.NameMinLength.IntValue), iLen, Config.NameMinLength.IntValue, (iLen <= Config.NameMaxLength.IntValue), iLen, Config.NameMaxLength.IntValue);
+            }
+
             if (bRegex && iLen >= Config.NameMinLength.IntValue && iLen <= Config.NameMaxLength.IntValue)
             {
                 if (g_bDebug)
@@ -125,7 +130,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
                 if (g_bDebug)
                 {
-                    CPrintToChat(client, "Gang prefix invalid.");
+                    CPrintToChat(client, "Gang name invalid.");
                 }
             }
         }
@@ -139,6 +144,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             bool bRegex = IsStringValid(client, g_sPrefix[client], "prefix", Config.PrefixRegex);
 
             int iLen = strlen(g_sPrefix[client]);
+
+            if (g_bDebug)
+            {
+                PrintToChat(client, "[OnClientSayCommand] (Prefix) bRegex: %d, Min: %d (iLen: %d, CVar: %d), Max: %d (iLen: %d, CVar: %d)", bRegex, (iLen >= Config.NameMinLength.IntValue), iLen, Config.NameMinLength.IntValue, (iLen <= Config.NameMaxLength.IntValue), iLen, Config.NameMaxLength.IntValue);
+            }
 
             if (bRegex && iLen >= Config.PrefixMinLength.IntValue && iLen <= Config.PrefixMaxLength.IntValue)
             {
