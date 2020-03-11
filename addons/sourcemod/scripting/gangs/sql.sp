@@ -1,4 +1,4 @@
-static int iTables = 9;
+static int iTables = 10;
 static int iCount = 0;
 
 static char sQueries[][1024] = {
@@ -57,6 +57,16 @@ static char sQueries[][1024] = {
         "`rank` TINYINT NOT NULL," ...
         "UNIQUE KEY (`playerid`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+    
+    "CREATE TABLE IF NOT EXISTS `gang_invites` (" ...
+        "`id` INT NOT NULL AUTO_INCREMENT," ...
+        "`invitetime` INT NOT NULL," ...
+        "`gangid` INT NOT NULL," ...
+        "`inviterid` INT NOT NULL," ...
+        "`playerid` INT NOT NULL," ...
+        "`accepted` TINYINT NOT NULL," ...
+        "`updatetime` INT NOT NULL," ...
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
     "CREATE TABLE IF NOT EXISTS `gang_logs` (" ...
         "`id` INT NOT NULL AUTO_INCREMENT," ...
@@ -100,7 +110,7 @@ static char sQueries[][1024] = {
 };
 
 static char sTables[][] = {
-    "players", "gangs", "gang_settings", "gang_ranks", "gang_players",
+    "players", "gangs", "gang_settings", "gang_ranks", "gang_players", "gang_invites",
     "gang_logs", "gang_logs_settings", "gang_logs_players", "gang_logs_points"
 };
 
@@ -128,7 +138,7 @@ public void OnSQLConnect(Database db, const char[] error, any data)
 
     if (!StrEqual(sDriver, "mysql", false))
     {
-        SetFailState("(OnSQLConnect) We found an invalid database driver (%s). MySQL will be required!", sDriver); // TODO - Better Text
+        SetFailState("(OnSQLConnect) We found an invalid database driver (%s). Gangs requires MySQL!", sDriver);
         return;
     }
 
