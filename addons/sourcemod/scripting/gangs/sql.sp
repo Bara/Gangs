@@ -498,7 +498,8 @@ public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const cha
     {
         CPrintToChatAll("%N has been created a new Gang! Name: %s, Prefix: %s", client, sName, sPrefix);
 
-        InsertGangLogs(client, gangid, "create");
+        InsertGangLogs(gangid, g_pPlayer[client].PlayerID, "create");
+        InsertGangPlayerLogs(gangid, g_pPlayer[client].PlayerID, true, "create");
 
         g_pPlayer[client].GangID = gangid;
         g_pPlayer[client].Rank = rankid;
@@ -510,6 +511,15 @@ public void Query_Insert_GangLogs(Database db, DBResultSet results, const char[]
     if (!IsValidDatabase(db, error))
     {
         SetFailState("(Query_Insert_GangLogs) Error: %s", error);
+        return;
+    }
+}
+
+public void Query_Insert_GangPlayerLogs(Database db, DBResultSet results, const char[] error, any data)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_GangPlayerLogs) Error: %s", error);
         return;
     }
 }

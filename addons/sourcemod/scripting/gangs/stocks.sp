@@ -146,15 +146,28 @@ bool GetGangPrefix(int id, char[] name, int length)
     return false;
 }
 
-void InsertGangLogs(int client, int gangid, const char[] type)
+void InsertGangLogs(int gangid, int playerid, const char[] type)
 {
     char sQuery[512];
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs` (`gangid`, `time`, `playerid`, `type`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', \"%s\");", gangid, g_pPlayer[client].PlayerID, type);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs` (`gangid`, `time`, `playerid`, `type`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', \"%s\");", gangid, playerid, type);
 
     if (g_bDebug)
     {
-        LogMessage("(Query_Insert_Player - %s) \"%L\": \"%s\"", type, client, sQuery);
+        LogMessage("(InsertGangLogs - %s) PlayerID \"%d\": \"%s\"", type, playerid, sQuery);
     }
 
     g_dDB.Query(Query_Insert_GangLogs, sQuery);
+}
+
+void InsertGangPlayerLogs(int gangid, int playerid, bool join, const char[] reason)
+{
+    char sQuery[512];
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, `playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '%d', \"%s\");", gangid, playerid, join, reason);
+
+    if (g_bDebug)
+    {
+        LogMessage("(InsertGangPlayerLogs) PlayerID \"%d\": \"%s\"", playerid, sQuery);
+    }
+
+    g_dDB.Query(Query_Insert_GangPlayerLogs, sQuery);
 }
