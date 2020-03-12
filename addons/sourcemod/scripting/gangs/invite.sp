@@ -38,7 +38,7 @@ void PlayerInviteList(int inviter)
     
     LoopClients(iTarget)
     {
-        if (g_pPlayer[iTarget].GangID == -1)
+        if (g_pPlayer[iTarget].GangID == -1) // TODO: Add check for already exist invite for a gang
         {
             if (!GetClientName(iTarget, sName, sizeof(sName)))
             {
@@ -82,7 +82,7 @@ public int Menu_PlayerInviteList(Menu menu, MenuAction action, int inviter, int 
 
 void InvitePlayer(int inviter, int target)
 {
-    char sQuery[512];
+    char sQuery[256];
     g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_invites` (`invitetime`, `gangid`, `playerid`, `inviterid`) VALUES (UNIX_TIMESTAMP(), '%d', '%d', '%d');", g_pPlayer[inviter].GangID, g_pPlayer[target].PlayerID, g_pPlayer[inviter].PlayerID);
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(inviter));
@@ -120,6 +120,15 @@ public void Query_Insert_GangInvite(Database db, DBResultSet results, const char
     menu.SetTitle("Menu - You have been invited to\n%s | %s\nInvited by: %N", sPrefix, sName, inviter);
     menu.AddItem("yes", "Menu - Accept invite");
     menu.AddItem("no", "Menu - Decline invite");
+
+    char sBuffer[12];
+
+    IntToString(g_pPlayer[inviter].PlayerID, sBuffer, sizeof(sBuffer));
+    menu.AddItem("inviterid", sBuffer, ITEMDRAW_IGNORE);
+
+    IntToString(g_pPlayer[inviter].GangID, sBuffer, sizeof(sBuffer));
+    menu.AddItem("gangid", sBuffer, ITEMDRAW_IGNORE);
+
     menu.ExitBackButton = false;
     menu.ExitButton = false;
     menu.Display(target, Config.InviteReactionTime.IntValue);
@@ -130,6 +139,23 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
     if (action == MenuAction_Select)
     {
         char sParam[12];
+        int iInviterID = -1;
+        int iGangID = -1;
+
+        for (int i = 0; i < menu.ItemCount; i++)
+        {
+            menu.GetItem(i, sParam, sizeof(sParam));
+            
+            if (StrEqual("inviterid", sParam))
+            {
+                iInviterID = StringToInt(sParam);
+            }
+            else if (StrEqual("gangid", sParam))
+            {
+                iGangID = StringToInt(sParam);
+            }
+        }
+
         menu.GetItem(param, sParam, sizeof(sParam));
 
         if (StrEqual(sParam, "yes"))
@@ -138,7 +164,12 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
         }
         else if (StrEqual(sParam, "no"))
         {
-
+            char sQuery[256];
+            g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `inviterid` = '%d' AND `gangid` = '%d';", iInviterID, iGangID);
+            DataPack pack = new DataPack();
+            pack.WriteCell(iInviterID);
+            pack.WriteCell(GetClientUserId(target));
+            g_dDB.Query(Query_Update_GangInvite0, sQuery, pack);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -152,4 +183,28 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
     {
         delete menu;
     }
+}
+
+public void Query_Update_GangInvite0(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Update_GangInvite0) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+
+    int inviter = GetClientOfPlayerID(pack.ReadCell());
+    int target = GetClientOfUserId(pack.ReadCell());
+
+    delete pack;
+
+    if (!IsClientValid(inviter) || !IsClientValid(target))
+    {
+        return;
+    }
+
+    CPrintToChat(inviter, "Chat - Target (%N) has declined your invite", target);
 }

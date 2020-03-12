@@ -227,3 +227,16 @@ bool HasClientPermission(int client, Permissions perm)
 
     return false;
 }
+
+int GetClientOfPlayerID(int playerid)
+{
+    LoopClients(client)
+    {
+        if (g_pPlayer[client].PlayerID == playerid)
+        {
+            return client;
+        }
+    }
+
+    return -1;
+}
