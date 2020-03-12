@@ -171,3 +171,41 @@ void InsertGangPlayerLogs(int gangid, int playerid, bool join, const char[] reas
 
     g_dDB.Query(Query_Insert_GangPlayerLogs, sQuery);
 }
+
+bool HasClientPermission(int client, Permissions perm)
+{
+    LoopArray(g_aGangRanks, i)
+    {
+        Ranks rank;
+        g_aGangRanks.GetArray(i, rank, sizeof(Ranks));
+
+        if (rank.GangID == g_pPlayer[client].GangID && rank.RankID == g_pPlayer[client].RankID)
+        {
+            if (perm == PERM_INVITE && rank.Invite)
+            {
+                return true;
+            }
+            else if (perm == PERM_KICK && rank.Kick)
+            {
+                return true;
+            }
+            else if (perm == PERM_PROMOTE && rank.Promote)
+            {
+                return true;
+            }
+            else if (perm == PERM_DEMOTE && rank.Demote)
+            {
+                return true;
+            }
+            else if (perm == PERM_UPGRADE && rank.Upgrade)
+            {
+                return true;
+            }else if (perm == PERM_MANAGER && rank.Manager)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}

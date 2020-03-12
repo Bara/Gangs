@@ -512,7 +512,7 @@ public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const cha
         InsertGangPlayerLogs(gangid, g_pPlayer[client].PlayerID, true, "create");
 
         g_pPlayer[client].GangID = gangid;
-        g_pPlayer[client].Rank = rankid;
+        g_pPlayer[client].RankID = rankid;
     }
 }
 

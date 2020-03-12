@@ -12,7 +12,7 @@ public Action Command_Gang(int client, int args)
 
     if (g_pPlayer[client].GangID == -1)
     {
-        ReplyToCommand(client, "You are not in a gang!");
+        ReplyToCommand(client, "Chat - You are not in a Gang");
         return Plugin_Handled;
     }
 

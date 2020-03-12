@@ -15,6 +15,16 @@
 #define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
 #define LoopArray(%1,%2) for (int %2 = 0; %2 < %1.Length; %2++)
 
+enum Permissions
+{
+    PERM_INVITE = 0,
+    PERM_KICK,
+    PERM_PROMOTE,
+    PERM_DEMOTE,
+    PERM_UPGRADE,
+    PERM_MANAGER
+}
+
 stock bool IsClientValid(int client)
 {
     if (client > 0 && client <= MaxClients)
