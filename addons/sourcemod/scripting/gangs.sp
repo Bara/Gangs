@@ -69,3 +69,8 @@ public void OnClientPutInServer(int client)
 
     g_dDB.Query(Query_SelectPlayer, sQuery, GetClientUserId(client));
 }
+
+public void OnClientDisconnect(int client)
+{
+    invite_OnClientDisconnect(client);
+}

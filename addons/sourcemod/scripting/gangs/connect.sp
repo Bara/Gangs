@@ -247,6 +247,8 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
         {
             g_pPlayer[client].PlayerID = results.FetchInt(0);
 
+            invite_LoadPlayerInvites(client);
+
             char sQuery[512];
             g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `players` SET `name` = \"%N\", `lastseen` = UNIX_TIMESTAMP() WHERE `communityid` = \"%s\";", client, g_pPlayer[client].CommunityID);
 
@@ -278,6 +280,8 @@ public void Query_Insert_Player(Database db, DBResultSet results, const char[] e
     if (IsClientValid(client))
     {
         g_pPlayer[client].PlayerID = results.InsertId;
+
+        invite_LoadPlayerInvites(client);
     }
 }
 

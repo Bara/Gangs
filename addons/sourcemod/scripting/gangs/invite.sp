@@ -5,6 +5,33 @@ void invite_OnPluginStart()
     // RegConsoleCmd("sm_gaccept", Command_Invites);
 }
 
+void invite_OnClientDisconnect(int client)
+{
+    LoopArray(g_aPlayerInvites, i)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
+
+        if (g_pPlayer[client].PlayerID == invite.PlayerID)
+        {
+            g_aPlayerInvites.Erase(i);
+        }
+    }
+}
+
+void invite_LoadPlayerInvites(int client)
+{
+    char sQuery[256];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `inviterid`, `playerid` FROM `gang_invites` WHERE `playerid` = '%d';");
+
+    if (g_bDebug)
+    {
+        LogMessage("(invite_LoadPlayerInvites) \"%L\": \"%s\"", client, sQuery);
+    }
+
+    g_dDB.Query(Query_Select_GangInvite, sQuery, GetClientUserId(client));
+}
+
 public Action Command_Invite(int inviter, int args)
 {
     if (!IsClientValid(inviter))
@@ -86,10 +113,16 @@ void InvitePlayer(int inviter, int target)
     invite.GangID = g_pPlayer[inviter].GangID;
     invite.PlayerID =  g_pPlayer[target].PlayerID;
     invite.InviterID =  g_pPlayer[inviter].PlayerID;
-    g_aPlayerInvites.PushArray(invite);
+    g_aPlayerInvites.PushArray(invite, sizeof(invite));
 
     char sQuery[256];
     g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_invites` (`invitetime`, `gangid`, `playerid`, `inviterid`) VALUES (UNIX_TIMESTAMP(), '%d', '%d', '%d');", invite.GangID, invite.PlayerID, invite.InviterID);
+
+    if (g_bDebug)
+    {
+        LogMessage("(InvitePlayer) \"%L\": \"%s\"", inviter, sQuery);
+    }
+
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(inviter));
     pack.WriteCell(GetClientUserId(target));
@@ -184,6 +217,11 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
             char sQuery[256];
             g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `inviterid` = '%d' AND `gangid` = '%d';", iInviterID, iGangID);
 
+            if (g_bDebug)
+            {
+                LogMessage("(Menu_Invite) \"%L\": \"%s\"", target, sQuery);
+            }
+
             DataPack pack = new DataPack();
             pack.WriteCell(iInviterID);
             pack.WriteCell(GetClientUserId(target));
@@ -225,6 +263,34 @@ public void Query_Update_GangInvite0(Database db, DBResultSet results, const cha
     }
 
     CPrintToChat(inviter, "Chat - Target (%N) has declined your invite", target);
+}
+
+public void Query_Select_GangInvite(Database db, DBResultSet results, const char[] error, int userid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Select_GangInvite) Error: %s", error);
+        return;
+    }
+
+    int client = GetClientOfPlayerID(userid);
+
+    if (!IsClientValid(client))
+    {
+        return;
+    }
+
+    if(results.RowCount > 0)
+    {
+        while (results.FetchRow())
+        {
+            Invite invite;
+            invite.GangID = results.FetchInt(0);
+            invite.InviterID = results.FetchInt(1);
+            invite.PlayerID = results.FetchInt(2);
+            g_aPlayerInvites.PushArray(invite, sizeof(invite));
+        }
+    }
 }
 
 bool DoesInviteExist(int target, int gangid)
