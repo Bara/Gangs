@@ -203,6 +203,7 @@ public void Query_CreateTable(Database db, DBResultSet results, const char[] err
         g_aGangs = new ArrayList(sizeof(Gang));
         g_aGangSettings = new ArrayList(sizeof(Settings));
         g_aGangRanks = new ArrayList(sizeof(Ranks));
+        g_aPlayerInvites = new ArrayList(sizeof(Invite));
 
         LateLoadPlayers(); // TODO: Move this when gang stuff is completely loaded
     }

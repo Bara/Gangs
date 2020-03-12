@@ -45,6 +45,12 @@ enum struct Ranks {
     char Name[32];
 }
 
+enum struct Invite {
+    int GangID;
+    int InviterID;
+    int PlayerID;
+}
+
 enum struct Configs {
     ConVar PluginPrefix;
     ConVar NameMaxLength;

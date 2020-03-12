@@ -38,7 +38,7 @@ void PlayerInviteList(int inviter)
     
     LoopClients(iTarget)
     {
-        if (g_pPlayer[iTarget].GangID == -1) // TODO: Add check for already exist invite for a gang
+        if (g_pPlayer[iTarget].GangID == -1 && !DoesInviteExist(iTarget, g_pPlayer[inviter].GangID))
         {
             if (!GetClientName(iTarget, sName, sizeof(sName)))
             {
@@ -82,8 +82,14 @@ public int Menu_PlayerInviteList(Menu menu, MenuAction action, int inviter, int 
 
 void InvitePlayer(int inviter, int target)
 {
+    Invite invite;
+    invite.GangID = g_pPlayer[inviter].GangID;
+    invite.PlayerID =  g_pPlayer[target].PlayerID;
+    invite.InviterID =  g_pPlayer[inviter].PlayerID;
+    g_aPlayerInvites.PushArray(invite);
+
     char sQuery[256];
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_invites` (`invitetime`, `gangid`, `playerid`, `inviterid`) VALUES (UNIX_TIMESTAMP(), '%d', '%d', '%d');", g_pPlayer[inviter].GangID, g_pPlayer[target].PlayerID, g_pPlayer[inviter].PlayerID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_invites` (`invitetime`, `gangid`, `playerid`, `inviterid`) VALUES (UNIX_TIMESTAMP(), '%d', '%d', '%d');", invite.GangID, invite.PlayerID, invite.InviterID);
     DataPack pack = new DataPack();
     pack.WriteCell(GetClientUserId(inviter));
     pack.WriteCell(GetClientUserId(target));
@@ -164,8 +170,20 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
         }
         else if (StrEqual(sParam, "no"))
         {
+            LoopArray(g_aPlayerInvites, i)
+            {
+                Invite invite;
+                g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
+
+                if (g_pPlayer[target].PlayerID == invite.PlayerID && iGangID == invite.GangID)
+                {
+                    g_aPlayerInvites.Erase(i);
+                }
+            }
+
             char sQuery[256];
             g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `inviterid` = '%d' AND `gangid` = '%d';", iInviterID, iGangID);
+
             DataPack pack = new DataPack();
             pack.WriteCell(iInviterID);
             pack.WriteCell(GetClientUserId(target));
@@ -207,4 +225,20 @@ public void Query_Update_GangInvite0(Database db, DBResultSet results, const cha
     }
 
     CPrintToChat(inviter, "Chat - Target (%N) has declined your invite", target);
+}
+
+bool DoesInviteExist(int target, int gangid)
+{
+    LoopArray(g_aPlayerInvites, i)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
+
+        if (g_pPlayer[target].PlayerID == invite.PlayerID && gangid == invite.GangID)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
