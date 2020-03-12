@@ -159,6 +159,15 @@ void InsertGangLogs(int gangid, int playerid, const char[] type)
     g_dDB.Query(Query_Insert_GangLogs, sQuery);
 }
 
+public void Query_Insert_GangLogs(Database db, DBResultSet results, const char[] error, any data)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_GangLogs) Error: %s", error);
+        return;
+    }
+}
+
 void InsertGangPlayerLogs(int gangid, int playerid, bool join, const char[] reason)
 {
     char sQuery[512];
@@ -170,6 +179,15 @@ void InsertGangPlayerLogs(int gangid, int playerid, bool join, const char[] reas
     }
 
     g_dDB.Query(Query_Insert_GangPlayerLogs, sQuery);
+}
+
+public void Query_Insert_GangPlayerLogs(Database db, DBResultSet results, const char[] error, any data)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_GangPlayerLogs) Error: %s", error);
+        return;
+    }
 }
 
 bool HasClientPermission(int client, Permissions perm)

@@ -13,7 +13,7 @@ bool g_bDebug = true;
 #include "gangs/globals.sp"
 #include "gangs/configs.sp"
 #include "gangs/stocks.sp"
-#include "gangs/sql.sp"
+#include "gangs/connect.sp"
 #include "gangs/create.sp"
 #include "gangs/menu.sp"
 #include "gangs/invite.sp"
@@ -30,7 +30,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     configs_OnPluginStart();
-    sql_OnPluginStart();
+    connect_OnPluginStart();
     create_OnPluginStart();
     menu_OnPluginStart();
     invite_OnPluginStart();

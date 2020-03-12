@@ -55,4 +55,5 @@ enum struct Configs {
     ConVar PrefixRegex;
     ConVar StartSlots;
     ConVar MaxLevel;
+    ConVar InviteReactionTime;
 }

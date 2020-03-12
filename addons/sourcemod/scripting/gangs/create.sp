@@ -223,6 +223,32 @@ void CheckNames(int client)
     g_dDB.Query(Query_CheckNames, sQuery, GetClientUserId(client));
 }
 
+public void Query_CheckNames(Database db, DBResultSet results, const char[] error, int userid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_CheckNames) Error: %s", error);
+        return;
+    }
+
+    int client = GetClientOfUserId(userid);
+
+    if (!IsClientValid(client))
+    {
+        return;
+    }
+
+    if (results.RowCount == 0)
+    {
+        CreateGang(client);
+    }
+    else
+    {
+        CPrintToChat(client, "Your name and/or prefix are already taken!");
+        ResetCreateSettings(client);
+    }
+}
+
 void CreateGang(int client)
 {
     char sQuery[1024];
@@ -239,4 +265,200 @@ void CreateGang(int client)
     pack.WriteString(g_sName[client]);
     pack.WriteString(g_sPrefix[client]);
     g_dDB.Query(Query_Insert_Gangs, sQuery, pack);
+}
+
+public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_Gangs) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+    int userid = pack.ReadCell();
+
+    char sName[32];
+    pack.ReadString(sName, sizeof(sName));
+
+    char sPrefix[16];
+    pack.ReadString(sPrefix, sizeof(sPrefix));
+
+    delete pack;
+
+    int client = GetClientOfUserId(userid);
+
+    if (IsClientValid(client))
+    {
+        int iGang = results.InsertId;
+
+        if (g_bDebug)
+        {
+            CPrintToChat(client, "Your gang %s (%d) has been added to \"gangs\"-table!", sName, iGang);
+        }
+
+        Gang gang;
+        gang.GangID = iGang;
+        gang.Created = GetTime();
+        strcopy(gang.Name, sizeof(Gang::Name), sName);
+        strcopy(gang.Prefix, sizeof(Gang::Prefix), sPrefix);
+        gang.Points = 0;
+        gang.Founder = g_pPlayer[client].PlayerID;
+        g_aGangs.PushArray(gang, sizeof(gang));
+
+        Transaction action = new Transaction();
+
+        char sQuery[1024];
+        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_settings` (`gangid`, `key`, `value`, `purchased`) VALUES ('%d', \"slots\", \"%d\", '1');", iGang, Config.StartSlots.IntValue);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Insert_Gangs) \"%L\": \"%s\"", client, sQuery);
+        }
+
+        action.AddQuery(sQuery, -1);
+
+        Settings setting;
+        setting.GangID = iGang;
+        Format(setting.Key, sizeof(Settings::Key), "slots");
+        Config.StartSlots.GetString(setting.Value, sizeof(Settings::Value));
+        setting.Bought = true;
+        g_aGangSettings.PushArray(setting, sizeof(setting));
+
+        ArrayList aRanks = AddRanksToTransaction(iGang, action);
+
+        pack = new DataPack();
+        pack.WriteCell(userid);
+        pack.WriteCell(iGang);
+        pack.WriteCell(aRanks);
+        pack.WriteString(gang.Name);
+        pack.WriteString(gang.Prefix);
+        g_dDB.Execute(action, TXN_OnSuccess, TXN_OnError, pack);
+    }
+}
+
+public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSet[] results, any[] queryData)
+{
+    if (g_bDebug)
+    {
+        LogMessage("(TXN_OnSuccess) numQueries: %d", numQueries);
+    }
+
+    pack.Reset();
+    int userid = pack.ReadCell();
+    int gangid = pack.ReadCell();
+    ArrayList aRanks = view_as<ArrayList>(pack.ReadCell());
+    char sName[32];
+    pack.ReadString(sName, sizeof(sName));
+    char sPrefix[16];
+    pack.ReadString(sPrefix, sizeof(sPrefix));
+    delete pack;
+
+    for (int i = 0; i < numQueries; i++)
+    {
+        if (g_bDebug)
+        {
+            LogMessage("(TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
+        }
+
+        if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
+        {
+            int iRank = results[i].InsertId;
+
+            Ranks rRank;
+            for (int j = 0; j < aRanks.Length; j++)
+            {
+                Rank rank;
+                aRanks.GetArray(j, rank, sizeof(rank));
+
+                if (queryData[i] == rank.Level)
+                {
+                    rRank.GangID = gangid;
+                    rRank.RankID = iRank;
+                    strcopy(rRank.Name, sizeof(Ranks::Name), rank.Name);
+                    rRank.Level = rank.Level;
+                    rRank.Invite = rank.Invite;
+                    rRank.Kick = rank.Kick;
+                    rRank.Promote = rank.Promote;
+                    rRank.Demote = rank.Demote;
+                    rRank.Upgrade = rank.Upgrade;
+                    rRank.Manager = rank.Manager;
+                    g_aGangRanks.PushArray(rRank, sizeof(rRank));
+                }
+            }
+
+            int client = GetClientOfUserId(userid);
+
+            if (IsClientValid(client) && queryData[i] == Config.MaxLevel.IntValue)
+            {
+                if (g_bDebug)
+                {
+                    LogMessage("(TXN_OnSuccess) ID for Rank Owner should be %d.", iRank);
+                }
+
+                pack = new DataPack();
+                pack.WriteCell(userid);
+                pack.WriteCell(gangid);
+                pack.WriteCell(iRank);
+                pack.WriteString(sName);
+                pack.WriteString(sPrefix);
+
+                char sQuery[512];
+                g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d');", g_pPlayer[client].PlayerID, gangid, iRank);
+
+                if (g_bDebug)
+                {
+                    LogMessage("(TXN_OnSuccess) \"%L\": \"%s\"", client, sQuery);
+                }
+
+                g_dDB.Query(Query_Insert_PlayerOwner, sQuery, pack);
+            }
+        }
+    }
+
+    // TODO: Reset
+}
+
+public void TXN_OnError(Database db, DataPack pack, int numQueries, const char[] error, int failIndex, any[] queryData)
+{
+    LogError("(TXN_OnError) Error executing query (rank level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
+    delete pack;
+}
+
+public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_PlayerOwner) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+
+    int userid = pack.ReadCell();
+    int gangid = pack.ReadCell();
+    int rankid = pack.ReadCell();
+
+    char sName[32];
+    pack.ReadString(sName, sizeof(sName));
+
+    char sPrefix[16];
+    pack.ReadString(sPrefix, sizeof(sPrefix));
+
+    delete pack;
+
+    int client = GetClientOfUserId(userid);
+
+    if (IsClientValid(client))
+    {
+        CPrintToChatAll("%N has been created a new Gang! Name: %s, Prefix: %s", client, sName, sPrefix);
+
+        InsertGangLogs(gangid, g_pPlayer[client].PlayerID, "create");
+        InsertGangPlayerLogs(gangid, g_pPlayer[client].PlayerID, true, "create");
+
+        g_pPlayer[client].GangID = gangid;
+        g_pPlayer[client].RankID = rankid;
+    }
 }
