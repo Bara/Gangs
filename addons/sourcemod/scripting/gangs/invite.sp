@@ -22,7 +22,7 @@ void invite_OnClientDisconnect(int client)
 void invite_LoadPlayerInvites(int client)
 {
     char sQuery[256];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `inviterid`, `playerid` FROM `gang_invites` WHERE `playerid` = '%d';");
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `inviterid`, `playerid` FROM `gang_invites` WHERE `playerid` = '%d' AND accepted IS NULL;", g_pPlayer[client].PlayerID);
 
     if (g_bDebug)
     {
@@ -177,21 +177,22 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
 {
     if (action == MenuAction_Select)
     {
-        char sParam[12];
+        char sParam[24];
+        char sID[12];
         int iInviterID = -1;
         int iGangID = -1;
 
         for (int i = 0; i < menu.ItemCount; i++)
         {
-            menu.GetItem(i, sParam, sizeof(sParam));
-            
+            menu.GetItem(i, sParam, sizeof(sParam), _, sID, sizeof(sID));
+
             if (StrEqual("inviterid", sParam))
             {
-                iInviterID = StringToInt(sParam);
+                iInviterID = StringToInt(sID);
             }
             else if (StrEqual("gangid", sParam))
             {
-                iGangID = StringToInt(sParam);
+                iGangID = StringToInt(sID);
             }
         }
 
@@ -273,7 +274,7 @@ public void Query_Select_GangInvite(Database db, DBResultSet results, const char
         return;
     }
 
-    int client = GetClientOfPlayerID(userid);
+    int client = GetClientOfUserId(userid);
 
     if (!IsClientValid(client))
     {
@@ -289,6 +290,11 @@ public void Query_Select_GangInvite(Database db, DBResultSet results, const char
             invite.InviterID = results.FetchInt(1);
             invite.PlayerID = results.FetchInt(2);
             g_aPlayerInvites.PushArray(invite, sizeof(invite));
+
+            if (g_bDebug)
+            {
+                LogMessage("(Query_Select_GangInvite) Adding invite (GangID: %d, InviterID: %d, PlayerID: %d) to arraylist.", invite.GangID, invite.InviterID, invite.PlayerID);
+            }
         }
     }
 }
