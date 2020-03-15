@@ -11,7 +11,7 @@ void configs_OnPluginStart()
     Config.NameRegex = AutoExecConfig_CreateConVar("gangs_name_regex", "^[a-zA-Z0-9 _,.!#+*]+$", "Allowed characters in gang name. (Default: \"^[a-zA-Z0-9 _,.!#+*]+$\"");
     Config.PrefixRegex = AutoExecConfig_CreateConVar("gangs_prefix_regex", "^[a-zA-Z0-9 _,.!#+*]+$", "Allowed characters in gang prefix. (Default: \"^[a-zA-Z0-9 _,.!#+*]+$\"");
     Config.StartSlots = AutoExecConfig_CreateConVar("gangs_start_slots", "4", "With how many slots should start a gang after creation?", _, true, 1.0);
-    Config.MaxLevel = AutoExecConfig_CreateConVar("gangs_max_rank_level", "10", "What should be the highest level for ranks? This could be used for max gang ranks.", _, true, 10.0);
+    Config.MaxLevel = AutoExecConfig_CreateConVar("gangs_max_rang_level", "10", "What should be the highest level for rangs? This could be used for max gang rangs.", _, true, 10.0);
     Config.InviteReactionTime = AutoExecConfig_CreateConVar("gangs_invite_reaction_time", "10", "Time in seconds to react for an invite.", _, true, 10.0, false);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();

@@ -7,16 +7,7 @@ void invite_OnPluginStart()
 
 void invite_OnClientDisconnect(int client)
 {
-    LoopArray(g_aPlayerInvites, i)
-    {
-        Invite invite;
-        g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
-
-        if (g_pPlayer[client].PlayerID == invite.PlayerID)
-        {
-            g_aPlayerInvites.Erase(i);
-        }
-    }
+    RemoveInvitesFromArray(client);
 }
 
 void invite_LoadPlayerInvites(int client)
@@ -200,23 +191,14 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
 
         if (StrEqual(sParam, "yes"))
         {
-
+            AddPlayerToGang(target, iGangID);
         }
         else if (StrEqual(sParam, "no"))
         {
-            LoopArray(g_aPlayerInvites, i)
-            {
-                Invite invite;
-                g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
-
-                if (g_pPlayer[target].PlayerID == invite.PlayerID && iGangID == invite.GangID)
-                {
-                    g_aPlayerInvites.Erase(i);
-                }
-            }
+            RemoveInvitesFromArray(target, iGangID);
 
             char sQuery[256];
-            g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `inviterid` = '%d' AND `gangid` = '%d';", iInviterID, iGangID);
+            g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `playerid` = '%d' AND `gangid` = '%d';", g_pPlayer[target].PlayerID, iGangID);
 
             if (g_bDebug)
             {
@@ -313,4 +295,93 @@ bool DoesInviteExist(int target, int gangid)
     }
 
     return false;
+}
+
+void RemoveInvitesFromArray(int client, int gangid = -1)
+{
+    LoopArray(g_aPlayerInvites, i)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
+
+        if (g_pPlayer[client].PlayerID == invite.PlayerID && (gangid == -1 || gangid == invite.GangID))
+        {
+            g_aPlayerInvites.Erase(i);
+        }
+    }
+}
+
+void AddPlayerToGang(int target, int gangid)
+{
+    RemoveInvitesFromArray(target, gangid);
+
+    char sQuery[256];
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '1', `updatetime` = UNIX_TIMESTAMP() WHERE `playerid` = '%d' AND `gangid` = '%d';", g_pPlayer[target].PlayerID, gangid);
+
+    if (g_bDebug)
+    {
+        LogMessage("(AddPlayerToGang) \"%L\": \"%s\"", target, sQuery);
+    }
+
+    DataPack pack1 = new DataPack();
+    pack1.WriteString("AddPlayerToGang - Accepted1");
+    g_dDB.Query(Query_DoNothing, sQuery, pack1);
+
+
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `playerid` = '%d' AND `gangid` != '%d';", g_pPlayer[target].PlayerID, gangid);
+
+    if (g_bDebug)
+    {
+        LogMessage("(AddPlayerToGang) \"%L\": \"%s\"", target, sQuery);
+    }
+
+    DataPack pack2 = new DataPack();
+    pack2.WriteString("AddPlayerToGang - Accepted0");
+    g_dDB.Query(Query_DoNothing, sQuery, pack2);
+
+
+    int iRang = GetLowerGangRang(gangid);
+
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rang`) VALUES ('%d', '%d', '%d');", g_pPlayer[target].PlayerID, gangid, iRang);
+
+    if (g_bDebug)
+    {
+        LogMessage("(AddPlayerToGang) \"%L\": \"%s\"", target, sQuery);
+    }
+
+    DataPack pack3 = new DataPack();
+    pack3.WriteCell(GetClientUserId(target));
+    pack3.WriteCell(gangid);
+    pack3.WriteCell(iRang);
+    g_dDB.Query(Query_Insert_GangPlayers, sQuery, pack3);
+}
+
+public void Query_Insert_GangPlayers(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Insert_GangPlayers) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+
+    int target = GetClientOfUserId(pack.ReadCell());
+    int iGang = pack.ReadCell();
+    int iRang = pack.ReadCell();
+
+    delete pack;
+
+    if (!IsClientValid(target))
+    {
+        return;
+    }
+
+    g_pPlayer[target].GangID = iGang;
+    g_pPlayer[target].RangID = iRang;
+
+    char sName[MAX_GANGS_NAME_LENGTH];
+    GetGangName(iGang, sName, sizeof(sName));
+    CPrintToGang(iGang, "[%s] %N has joined your gang.", sName, target);
 }

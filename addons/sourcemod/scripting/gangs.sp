@@ -57,7 +57,7 @@ public void OnClientPutInServer(int client)
 
     g_pPlayer[client].PlayerID = -1;
     g_pPlayer[client].GangID = -1;
-    g_pPlayer[client].RankID = -1;
+    g_pPlayer[client].RangID = -1;
 
     char sQuery[128];
     g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\";", g_pPlayer[client].CommunityID);

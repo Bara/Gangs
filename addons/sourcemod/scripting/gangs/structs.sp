@@ -1,7 +1,7 @@
 enum struct Player {
     int PlayerID;
     int GangID;
-    int RankID;
+    int RangID;
     char CommunityID[18];
 }
 
@@ -21,7 +21,7 @@ enum struct Settings {
     char Value[128];
 }
 
-enum struct Rank {
+enum struct Rang {
     int Level;
     bool Invite;
     bool Kick;
@@ -32,9 +32,9 @@ enum struct Rank {
     char Name[32];
 }
 
-enum struct Ranks {
+enum struct Rangs {
     int GangID;
-    int RankID;
+    int RangID;
     int Level;
     bool Invite;
     bool Kick;

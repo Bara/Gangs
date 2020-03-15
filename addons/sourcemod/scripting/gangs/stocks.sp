@@ -19,14 +19,14 @@ void LateLoadPlayers()
     }
 }
 
-ArrayList AddRanksToTransaction(int gangid, Transaction action)
+ArrayList AddRangsToTransaction(int gangid, Transaction action)
 {
     char sFile[PLATFORM_MAX_PATH + 1];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/gangs/default_ranks.cfg");
+    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/gangs/default_rangs.cfg");
 
     if (!FileExists(sFile))
     {
-        SetFailState("(AddRanksToTransaction) The config file \"%s\" doesn't exist!", sFile);
+        SetFailState("(AddRangsToTransaction) The config file \"%s\" doesn't exist!", sFile);
         return null;
     }
 
@@ -34,47 +34,47 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
     if (!kvConfig.ImportFromFile(sFile))
     {
-        SetFailState("(AddRanksToTransaction) Can't read \"%s\"! (ImportFromFile)", sFile);
+        SetFailState("(AddRangsToTransaction) Can't read \"%s\"! (ImportFromFile)", sFile);
         delete kvConfig;
         return null;
     }
 
-    if (!kvConfig.JumpToKey("Ranks"))
+    if (!kvConfig.JumpToKey("Rangs"))
     {
-        SetFailState("(AddRanksToTransaction) Can't read \"%s\"! (JumpToKey.Ranks)", sFile);
+        SetFailState("(AddRangsToTransaction) Can't read \"%s\"! (JumpToKey.Rangs)", sFile);
         delete kvConfig;
         return null;
     }
 
-    ArrayList aRanks = new ArrayList(sizeof(Rank));
+    ArrayList aRangs = new ArrayList(sizeof(Rang));
 
-    Rank rank;
-    Format(rank.Name, sizeof(Rank::Name), "Owner");
-    rank.Level = Config.MaxLevel.IntValue;
-    rank.Invite = true;
-    rank.Kick = true;
-    rank.Promote = true;
-    rank.Demote = true;
-    rank.Upgrade = true;
-    rank.Manager = true;
-    aRanks.PushArray(rank, sizeof(rank));
+    Rang rang;
+    Format(rang.Name, sizeof(Rang::Name), "Owner");
+    rang.Level = Config.MaxLevel.IntValue;
+    rang.Invite = true;
+    rang.Kick = true;
+    rang.Promote = true;
+    rang.Demote = true;
+    rang.Upgrade = true;
+    rang.Manager = true;
+    aRangs.PushArray(rang, sizeof(rang));
 
     if (kvConfig.GotoFirstSubKey(false))
     {
         do
         {
-            kvConfig.GetSectionName(rank.Name, sizeof(Rank::Name));
-            rank.Level = kvConfig.GetNum("Level", -1);
-            rank.Invite = view_as<bool>(kvConfig.GetNum("Invite", -1));
-            rank.Kick = view_as<bool>(kvConfig.GetNum("Kick", -1));
-            rank.Promote = view_as<bool>(kvConfig.GetNum("Promote", -1));
-            rank.Demote = view_as<bool>(kvConfig.GetNum("Demote", -1));
-            rank.Upgrade = view_as<bool>(kvConfig.GetNum("Upgrade", -1));
-            rank.Manager = view_as<bool>(kvConfig.GetNum("Manager", -1));
+            kvConfig.GetSectionName(rang.Name, sizeof(Rang::Name));
+            rang.Level = kvConfig.GetNum("Level", -1);
+            rang.Invite = view_as<bool>(kvConfig.GetNum("Invite", -1));
+            rang.Kick = view_as<bool>(kvConfig.GetNum("Kick", -1));
+            rang.Promote = view_as<bool>(kvConfig.GetNum("Promote", -1));
+            rang.Demote = view_as<bool>(kvConfig.GetNum("Demote", -1));
+            rang.Upgrade = view_as<bool>(kvConfig.GetNum("Upgrade", -1));
+            rang.Manager = view_as<bool>(kvConfig.GetNum("Manager", -1));
 
-            if (rank.Level < Config.MaxLevel.IntValue)
+            if (rang.Level < Config.MaxLevel.IntValue)
             {
-                aRanks.PushArray(rank, sizeof(rank));
+                aRangs.PushArray(rang, sizeof(rang));
             }
             else
             {
@@ -89,27 +89,27 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
 
 
     char sQuery[1024];
-    for (int i = 0; i < aRanks.Length; i++)
+    for (int i = 0; i < aRangs.Length; i++)
     {
-        aRanks.GetArray(i, rank, sizeof(rank));
+        aRangs.GetArray(i, rang, sizeof(rang));
         
         if (g_bDebug)
         {
-            LogMessage("(AddRanksToTransaction) Rank: %s, iLevel: %d, iInvite: %d, iKick: %d, iPromote: %d, iDemote: %d, iUpgrade: %d, iManager: %d", rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
+            LogMessage("(AddRangsToTransaction) Rang: %s, iLevel: %d, iInvite: %d, iKick: %d, iPromote: %d, iDemote: %d, iUpgrade: %d, iManager: %d", rang.Name, rang.Level, rang.Invite, rang.Kick, rang.Promote, rang.Demote, rang.Upgrade, rang.Manager);
         }
 
-        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_ranks` (`gangid`, `rank`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`) VALUES ('%d', \"%s\", '%d', '%d', '%d', '%d', '%d', '%d', '%d');", gangid, rank.Name, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
+        g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_rangs` (`gangid`, `rang`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`) VALUES ('%d', \"%s\", '%d', '%d', '%d', '%d', '%d', '%d', '%d');", gangid, rang.Name, rang.Level, rang.Invite, rang.Kick, rang.Promote, rang.Demote, rang.Upgrade, rang.Manager);
 
         if (g_bDebug)
         {
-            LogMessage("(AddRanksToTransaction) Query: \"%s\"", sQuery);
+            LogMessage("(AddRangsToTransaction) Query: \"%s\"", sQuery);
         }
 
-        action.AddQuery(sQuery, rank.Level);
+        action.AddQuery(sQuery, rang.Level);
     }
 
     delete kvConfig;
-    return aRanks;
+    return aRangs;
 }
 
 bool GetGangName(int id, char[] name, int length)
@@ -192,33 +192,33 @@ public void Query_Insert_GangPlayerLogs(Database db, DBResultSet results, const 
 
 bool HasClientPermission(int client, Permissions perm)
 {
-    LoopArray(g_aGangRanks, i)
+    LoopArray(g_aGangRangs, i)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(Ranks));
+        Rangs rang;
+        g_aGangRangs.GetArray(i, rang, sizeof(Rangs));
 
-        if (rank.GangID == g_pPlayer[client].GangID && rank.RankID == g_pPlayer[client].RankID)
+        if (rang.GangID == g_pPlayer[client].GangID && rang.RangID == g_pPlayer[client].RangID)
         {
-            if (perm == PERM_INVITE && rank.Invite)
+            if (perm == PERM_INVITE && rang.Invite)
             {
                 return true;
             }
-            else if (perm == PERM_KICK && rank.Kick)
+            else if (perm == PERM_KICK && rang.Kick)
             {
                 return true;
             }
-            else if (perm == PERM_PROMOTE && rank.Promote)
+            else if (perm == PERM_PROMOTE && rang.Promote)
             {
                 return true;
             }
-            else if (perm == PERM_DEMOTE && rank.Demote)
+            else if (perm == PERM_DEMOTE && rang.Demote)
             {
                 return true;
             }
-            else if (perm == PERM_UPGRADE && rank.Upgrade)
+            else if (perm == PERM_UPGRADE && rang.Upgrade)
             {
                 return true;
-            }else if (perm == PERM_MANAGER && rank.Manager)
+            }else if (perm == PERM_MANAGER && rang.Manager)
             {
                 return true;
             }
@@ -239,4 +239,52 @@ int GetClientOfPlayerID(int playerid)
     }
 
     return -1;
+}
+
+int GetLowerGangRang(int gangid)
+{
+    int iRang = -1;
+    int iLevel = -1;
+    LoopArray(g_aGangRangs, i)
+    {
+        Rangs rang;
+        g_aGangRangs.GetArray(i, rang, sizeof(rang));
+
+        if (rang.GangID == gangid)
+        {
+            if (iLevel == -1 || iLevel > rang.Level)
+            {
+                iLevel = rang.Level;
+                iRang = rang.RangID;
+            }
+        }
+    }
+}
+
+public void Query_DoNothing(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    pack.Reset();
+    char from[64];
+    pack.ReadString(from, sizeof(from));
+    delete pack;
+
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_DoNothing) (%s) Error: %s", from, error);
+        return;
+    }
+}
+
+void CPrintToGang(int gangid, const char[] message, any ...)
+{
+    char buffer[MAX_MESSAGE_LENGTH];
+    VFormat(buffer, sizeof(buffer), message, 3);
+
+    LoopClients(client)
+    {
+        if (g_pPlayer[client].GangID == gangid)
+        {
+            CPrintToChat(client, message);
+        }
+    }
 }
