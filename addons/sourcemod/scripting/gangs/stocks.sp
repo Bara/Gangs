@@ -259,6 +259,8 @@ int GetLowerGangRang(int gangid)
             }
         }
     }
+
+    return iRang;
 }
 
 public void Query_DoNothing(Database db, DBResultSet results, const char[] error, DataPack pack)
