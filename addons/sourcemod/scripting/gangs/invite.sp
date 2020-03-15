@@ -390,7 +390,7 @@ public void Query_Insert_GangPlayers(Database db, DBResultSet results, const cha
 
     char sName[MAX_GANGS_NAME_LENGTH];
     GetGangName(iGang, sName, sizeof(sName));
-    CPrintToGang(iGang, "Chat - {prefix}[%s] {player}%N {default}has joined your gang.", sName, target);
+    CPrintToGang(iGang, "Chat - {prefix}[%s] {player}%N {default}has joined the gang.", sName, target);
 }
 
 public Action Command_Invites(int client, int args)
