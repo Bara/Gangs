@@ -211,11 +211,11 @@ public void Query_CreateTable(Database db, DBResultSet results, const char[] err
     }
 }
 
-public void Query_SelectPlayer(Database db, DBResultSet results, const char[] error, int userid)
+public void Query_Select_Player(Database db, DBResultSet results, const char[] error, int userid)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_SelectPlayer) Error: %s", error);
+        SetFailState("(Query_Select_Player) Error: %s", error);
         return;
     }
 
@@ -228,7 +228,7 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
 
     if (g_bDebug)
     {
-        LogMessage("(Query_SelectPlayer) UserID: %d (Client: %d), Rows: %d", userid, client, results.RowCount);
+        LogMessage("(Query_Select_Player) UserID: %d (Client: %d), Rows: %d", userid, client, results.RowCount);
     }
 
     if (results.RowCount == 0)
@@ -238,7 +238,7 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
 
         if (g_bDebug)
         {
-            LogMessage("(Query_SelectPlayer) \"%L\": \"%s\"", client, sQuery);
+            LogMessage("(Query_Select_Player) \"%L\": \"%s\"", client, sQuery);
         }
 
         g_dDB.Query(Query_Insert_Player, sQuery, userid);
@@ -256,14 +256,14 @@ public void Query_SelectPlayer(Database db, DBResultSet results, const char[] er
 
             if (g_bDebug)
             {
-                LogMessage("(Query_SelectPlayer) Update \"%L\"<%d>: \"%s\"", client, g_pPlayer[client].PlayerID, sQuery);
+                LogMessage("(Query_Select_Player) Update \"%L\"<%d>: \"%s\"", client, g_pPlayer[client].PlayerID, sQuery);
             }
 
-            g_dDB.Query(Query_UpdatePlayer, sQuery);
+            g_dDB.Query(Query_Update_Player, sQuery, userid);
         }
         else
         {
-            LogError("(Query_SelectPlayer) We have more rows for \"%N\". Query stopped!", client);
+            LogError("(Query_Select_Player) We have more rows for \"%N\". Query stopped!", client);
             return;
         }
     }
@@ -287,11 +287,97 @@ public void Query_Insert_Player(Database db, DBResultSet results, const char[] e
     }
 }
 
-public void Query_UpdatePlayer(Database db, DBResultSet results, const char[] error, any data)
+public void Query_Update_Player(Database db, DBResultSet results, const char[] error, int userid)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_UpdatePlayer) Error: %s", error);
+        SetFailState("(Query_Update_Player) Error: %s", error);
         return;
+    }
+
+    int client = GetClientOfUserId(userid);
+
+    if (IsClientValid(client))
+    {
+        char sQuery[128];
+        g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `rang` FROM `gang_players` WHERE `playerid` = '%d';", g_pPlayer[client].PlayerID);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Update_Player) \"%L\": \"%s\"", client, sQuery);
+        }
+
+        g_dDB.Query(Query_Select_GangPlayers, sQuery, userid);
+    }
+}
+
+public void Query_Select_GangPlayers(Database db, DBResultSet results, const char[] error, int userid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Select_GangPlayers) Error: %s", error);
+        return;
+    }
+
+    int client = GetClientOfUserId(userid);
+
+    if (IsClientValid(client))
+    {
+        if (results.FetchRow())
+        {
+            g_pPlayer[client].GangID = results.FetchInt(0);
+            g_pPlayer[client].RangID = results.FetchInt(1);
+
+            if (!IsGangValid(g_pPlayer[client].GangID))
+            {
+                LoadGang(g_pPlayer[client].GangID);
+            }
+        }
+    }
+}
+
+void LoadGang(int gangid)
+{
+    char sQuery[128];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `name`, `prefix`, `created`, `points`, `founder` FROM `gangs` WHERE `id` = '%d';", gangid);
+
+    if (g_bDebug)
+    {
+        LogMessage("(LoadGang) Query: \"%s\"", sQuery);
+    }
+
+    Gang gang;
+    gang.GangID = gangid;
+
+    int iIndex = g_aGangs.PushArray(gang, sizeof(gang));
+
+    g_dDB.Query(Query_Select_Gangs, sQuery, iIndex);
+}
+
+
+public void Query_Select_Gangs(Database db, DBResultSet results, const char[] error, int index)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Select_Gangs) Error: %s", error);
+        return;
+    }
+
+    if (results.FetchRow())
+    {
+        Gang gang;
+        gang.GangID = results.FetchInt(0);
+        results.FetchString(1, gang.Name, sizeof(Gang::Name));
+        results.FetchString(2, gang.Prefix, sizeof(Gang::Prefix));
+        gang.Created = results.FetchInt(3);
+        gang.Points = results.FetchInt(4);
+        gang.Founder = results.FetchInt(5);
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Select_Gangs) Added \"%s\" to gangs cache (GangID: %d, Prefix: %s, Created: %d, Points: %d, Founder: %d).", gang.Name, gang.GangID, gang.Prefix, gang.Created, gang.Points, gang.Founder);
+        }
+
+        g_aGangs.SetArray(index, gang, sizeof(gang));
     }
 }

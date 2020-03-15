@@ -67,7 +67,7 @@ public void OnClientPutInServer(int client)
         LogMessage("(OnClientPutInServer) \"%L\": \"%s\"", client, sQuery);
     }
 
-    g_dDB.Query(Query_SelectPlayer, sQuery, GetClientUserId(client));
+    g_dDB.Query(Query_Select_Player, sQuery, GetClientUserId(client));
 }
 
 public void OnClientDisconnect(int client)

@@ -286,7 +286,23 @@ void CPrintToGang(int gangid, const char[] message, any ...)
     {
         if (g_pPlayer[client].GangID == gangid)
         {
-            CPrintToChat(client, message);
+            CPrintToChat(client, buffer);
         }
     }
+}
+
+bool IsGangValid(int gangid)
+{
+    LoopArray(g_aGangs, i)
+    {
+        Gang gang;
+        g_aGangs.GetArray(i, gang, sizeof(gang));
+
+        if (gang.GangID == gangid)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

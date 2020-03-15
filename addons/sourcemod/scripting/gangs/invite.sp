@@ -1,8 +1,7 @@
 void invite_OnPluginStart()
 {
     RegConsoleCmd("sm_ginvite", Command_Invite);
-    // RegConsoleCmd("sm_ginvites", Command_Invites);
-    // RegConsoleCmd("sm_gaccept", Command_Invites);
+    RegConsoleCmd("sm_ginvites", Command_Invites);
 }
 
 void invite_OnClientDisconnect(int client)
@@ -86,6 +85,9 @@ public int Menu_PlayerInviteList(Menu menu, MenuAction action, int inviter, int 
         if (IsClientValid(iTarget) && g_pPlayer[iTarget].GangID == -1)
         {
             InvitePlayer(inviter, iTarget);
+
+            CPrintToChat(inviter, "Invite sent to %N", iTarget);
+            CPrintToChat(iTarget, "%N has invite you to his gang.", inviter);
         }
         else
         {
@@ -160,7 +162,7 @@ public void Query_Insert_GangInvite(Database db, DBResultSet results, const char
     menu.AddItem("gangid", sBuffer, ITEMDRAW_IGNORE);
 
     menu.ExitBackButton = false;
-    menu.ExitButton = false;
+    menu.ExitButton = true;
     menu.Display(target, Config.InviteReactionTime.IntValue);
 }
 
@@ -277,18 +279,23 @@ public void Query_Select_GangInvite(Database db, DBResultSet results, const char
             {
                 LogMessage("(Query_Select_GangInvite) Adding invite (GangID: %d, InviterID: %d, PlayerID: %d) to arraylist.", invite.GangID, invite.InviterID, invite.PlayerID);
             }
+
+            if (!IsGangValid(invite.GangID))
+            {
+                LoadGang(invite.GangID);
+            }
         }
     }
 }
 
-bool DoesInviteExist(int target, int gangid)
+bool DoesInviteExist(int target, int gangid = -1)
 {
     LoopArray(g_aPlayerInvites, i)
     {
         Invite invite;
         g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));
 
-        if (g_pPlayer[target].PlayerID == invite.PlayerID && gangid == invite.GangID)
+        if (g_pPlayer[target].PlayerID == invite.PlayerID && (gangid == -1 || gangid == invite.GangID))
         {
             return true;
         }
@@ -384,4 +391,80 @@ public void Query_Insert_GangPlayers(Database db, DBResultSet results, const cha
     char sName[MAX_GANGS_NAME_LENGTH];
     GetGangName(iGang, sName, sizeof(sName));
     CPrintToGang(iGang, "Chat - {prefix}[%s] {player}%N {default}has joined your gang.", sName, target);
+}
+
+public Action Command_Invites(int client, int args)
+{
+    if (!IsClientValid(client))
+    {
+        return Plugin_Handled;
+    }
+
+    if (g_pPlayer[client].GangID > 0)
+    {
+        CReplyToCommand(client, "You are already in a gang.");
+        return Plugin_Handled;
+    }
+
+    ShowPlayerInvites(client);
+
+    return Plugin_Handled;
+}
+
+void ShowPlayerInvites(int client)
+{
+    if (!DoesInviteExist(client))
+    {
+        CPrintToChat(client, "Chat - No invite");
+        return;
+    }
+
+    Menu menu = new Menu(Menu_PlayerInvites);
+    menu.SetTitle("Select gang to accept the invite.\nBy accepting an invite,\nwill all others invites will declined.");
+
+    char sName[MAX_GANGS_NAME_LENGTH];
+    char sPrefix[MAX_GANGS_PREFIX_LENGTH];
+    char sText[MAX_GANGS_NAME_LENGTH + MAX_GANGS_PREFIX_LENGTH + 4];
+    char sID[12];
+
+    LoopArray(g_aPlayerInvites, i)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(i, invite, sizeof(invite));
+
+        if (invite.PlayerID == g_pPlayer[client].PlayerID)
+        {
+            GetGangName(invite.GangID, sName, sizeof(sName));
+            GetGangPrefix(invite.GangID, sPrefix, sizeof(sPrefix));
+            Format(sText, sizeof(sText), "%s (%s)", sName, sPrefix);
+            IntToString(invite.GangID, sID, sizeof(sID));
+
+            menu.AddItem(sID, sText);
+        }
+    }
+
+    menu.ExitBackButton = false;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int Menu_PlayerInvites(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Select)
+    {
+        char sID[12];
+        menu.GetItem(param, sID, sizeof(sID));
+
+        int iGang = StringToInt(sID);
+
+
+        if (IsGangValid(iGang))
+        {
+            AddPlayerToGang(client, iGang);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
 }
