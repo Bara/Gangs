@@ -324,7 +324,7 @@ void AddPlayerToGang(int target, int gangid)
     }
 
     DataPack pack1 = new DataPack();
-    pack1.WriteString("AddPlayerToGang - Accepted1");
+    pack1.WriteString("AddPlayerToGang - Accepted 1");
     g_dDB.Query(Query_DoNothing, sQuery, pack1);
 
 
@@ -336,7 +336,7 @@ void AddPlayerToGang(int target, int gangid)
     }
 
     DataPack pack2 = new DataPack();
-    pack2.WriteString("AddPlayerToGang - Accepted0");
+    pack2.WriteString("AddPlayerToGang - Accepted 0");
     g_dDB.Query(Query_DoNothing, sQuery, pack2);
 
 
@@ -383,5 +383,5 @@ public void Query_Insert_GangPlayers(Database db, DBResultSet results, const cha
 
     char sName[MAX_GANGS_NAME_LENGTH];
     GetGangName(iGang, sName, sizeof(sName));
-    CPrintToGang(iGang, "[%s] %N has joined your gang.", sName, target);
+    CPrintToGang(iGang, "Chat - {prefix}[%s] {player}%N {default}has joined your gang.", sName, target);
 }

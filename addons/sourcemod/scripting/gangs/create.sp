@@ -72,12 +72,12 @@ public int Menu_CreateGang(Menu menu, MenuAction action, int client, int param)
 
         if (StrEqual(sParam, "name", false))
         {
-            CPrintToChat(client, "Type your gang name (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.NameMinLength.IntValue, Config.NameMaxLength.IntValue);
+            CPrintToChat(client, "Chat - Type your gang name (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.NameMinLength.IntValue, Config.NameMaxLength.IntValue);
             g_bName[client] = true;
         }
         else if (StrEqual(sParam, "prefix", false))
         {
-            CPrintToChat(client, "Type your gang prefix (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.PrefixMinLength.IntValue, Config.PrefixMaxLength.IntValue);
+            CPrintToChat(client, "Chat - Type your gang prefix (min. length: %d, max. length: %d) into the (public) chat or \"!abort\" to abort this process.", Config.PrefixMinLength.IntValue, Config.PrefixMaxLength.IntValue);
             g_bPrefix[client] = true;
         }
         else if (StrEqual(sParam, "create", false))
@@ -244,7 +244,7 @@ public void Query_CheckNames(Database db, DBResultSet results, const char[] erro
     }
     else
     {
-        CPrintToChat(client, "Your name and/or prefix are already taken!");
+        CPrintToChat(client, "Chat - Your name and/or prefix are already taken!");
         ResetCreateSettings(client);
     }
 }
@@ -453,7 +453,7 @@ public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const cha
 
     if (IsClientValid(client))
     {
-        CPrintToChatAll("%N has been created a new Gang! Name: %s, Prefix: %s", client, sName, sPrefix);
+        CPrintToChatAll("Chat - {player}%N {default}has been created a new Gang! Name: {highlight}%s{default}, Prefix: {highlight}%s", client, sName, sPrefix);
 
         InsertGangLogs(gangid, g_pPlayer[client].PlayerID, "create");
         InsertGangPlayerLogs(gangid, g_pPlayer[client].PlayerID, true, "create");
