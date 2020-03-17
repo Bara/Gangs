@@ -306,3 +306,89 @@ bool IsGangValid(int gangid)
 
     return false;
 }
+
+void RemoveInactiveGangFromArrays()
+{
+    bool bPlayers = false;
+    bool bInvites = false;
+
+    LoopArray(g_aGangs, i)
+    {
+        Gang gang;
+        g_aGangs.GetArray(i, gang, sizeof(gang));
+
+        LoopClients(client)
+        {
+            if (g_pPlayer[client].GangID == gang.GangID)
+            {
+                bPlayers = true;
+                break;
+            }
+        }
+
+        if (!bPlayers)
+        {
+            RemoveRangsFromArray(gang.GangID);
+            RemoveSettingsFromArray(gang.GangID);
+        }
+
+        LoopArray(g_aPlayerInvites, j)
+        {
+            Invite invite;
+            g_aPlayerInvites.GetArray(j, invite, sizeof(invite));
+
+            if (invite.GangID == gang.GangID)
+            {
+                bInvites = true;
+                break;
+            }
+        }
+
+        if (!bInvites && !bPlayers)
+        {
+            RemoveGangFromArray(gang.GangID);
+        }
+    }
+}
+
+void RemoveRangsFromArray(int gangid)
+{
+    LoopArray(g_aGangRangs, i)
+    {
+        Rangs rang;
+        g_aGangRangs.GetArray(i, rang, sizeof(rang));
+
+        if (rang.GangID == gangid)
+        {
+            g_aGangRangs.Erase(i);
+        }
+    }
+}
+
+void RemoveSettingsFromArray(int gangid)
+{
+    LoopArray(g_aGangSettings, i)
+    {
+        Settings setting;
+        g_aGangSettings.GetArray(i, setting, sizeof(setting));
+
+        if (setting.GangID == gangid)
+        {
+            g_aGangSettings.Erase(i);
+        }
+    }
+}
+
+void RemoveGangFromArray(int gangid)
+{
+    LoopArray(g_aGangs, i)
+    {
+        Gang gang;
+        g_aGangs.GetArray(i, gang, sizeof(gang));
+
+        if (gang.GangID == gangid)
+        {
+            g_aGangs.Erase(i);
+        }
+    }
+}

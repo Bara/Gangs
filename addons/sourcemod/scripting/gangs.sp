@@ -73,4 +73,6 @@ public void OnClientPutInServer(int client)
 public void OnClientDisconnect(int client)
 {
     invite_OnClientDisconnect(client);
+    
+    RemoveInactiveGangFromArrays();
 }
