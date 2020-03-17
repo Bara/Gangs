@@ -2,6 +2,7 @@ enum struct Player {
     int PlayerID;
     int GangID;
     int RangID;
+    bool Leaving;
     char CommunityID[18];
 }
 

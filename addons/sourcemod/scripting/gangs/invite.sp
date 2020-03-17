@@ -6,7 +6,7 @@ void invite_OnPluginStart()
 
 void invite_OnClientDisconnect(int client)
 {
-    RemoveInvitesFromArray(client);
+    RemovePlayerInvitesFromArray(client);
 }
 
 void invite_LoadPlayerInvites(int client)
@@ -41,12 +41,12 @@ public Action Command_Invite(int inviter, int args)
         return Plugin_Handled;
     }
 
-    PlayerInviteList(inviter);
+    ShowPlayerListMenu(inviter);
 
     return Plugin_Handled;
 }
 
-void PlayerInviteList(int inviter)
+void ShowPlayerListMenu(int inviter)
 {
     Menu menu = new Menu(Menu_PlayerInviteList);
     menu.SetTitle("Menu - Invite - Choose a player");
@@ -55,7 +55,7 @@ void PlayerInviteList(int inviter)
     
     LoopClients(iTarget)
     {
-        if (g_pPlayer[iTarget].GangID == -1 && !DoesInviteExist(iTarget, g_pPlayer[inviter].GangID))
+        if (g_pPlayer[iTarget].GangID == -1 && !DoesPlayerInviteExist(iTarget, g_pPlayer[inviter].GangID))
         {
             if (!GetClientName(iTarget, sName, sizeof(sName)))
             {
@@ -197,7 +197,7 @@ public int Menu_Invite(Menu menu, MenuAction action, int target, int param)
         }
         else if (StrEqual(sParam, "no"))
         {
-            RemoveInvitesFromArray(target, iGangID);
+            RemovePlayerInvitesFromArray(target, iGangID);
 
             char sQuery[256];
             g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '0', `updatetime` = UNIX_TIMESTAMP() WHERE `playerid` = '%d' AND `gangid` = '%d';", g_pPlayer[target].PlayerID, iGangID);
@@ -288,7 +288,7 @@ public void Query_Select_GangInvite(Database db, DBResultSet results, const char
     }
 }
 
-bool DoesInviteExist(int target, int gangid = -1)
+bool DoesPlayerInviteExist(int target, int gangid = -1)
 {
     LoopArray(g_aPlayerInvites, i)
     {
@@ -304,7 +304,7 @@ bool DoesInviteExist(int target, int gangid = -1)
     return false;
 }
 
-void RemoveInvitesFromArray(int client, int gangid = -1)
+void RemovePlayerInvitesFromArray(int client, int gangid = -1)
 {
     LoopArray(g_aPlayerInvites, i)
     {
@@ -320,7 +320,17 @@ void RemoveInvitesFromArray(int client, int gangid = -1)
 
 void AddPlayerToGang(int target, int gangid)
 {
-    RemoveInvitesFromArray(target, gangid);
+    RemovePlayerInvitesFromArray(target, gangid);
+
+    if (AreGangSettingsLoaded(gangid))
+    {
+        LoadSettings(gangid);
+    }
+
+    if (AreGangRangsLoaded(gangid))
+    {
+        LoadRangs(gangid);
+    }
 
     char sQuery[256];
     g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_invites` SET `accepted` = '1', `updatetime` = UNIX_TIMESTAMP() WHERE `playerid` = '%d' AND `gangid` = '%d';", g_pPlayer[target].PlayerID, gangid);
@@ -413,7 +423,7 @@ public Action Command_Invites(int client, int args)
 
 void ShowPlayerInvites(int client)
 {
-    if (!DoesInviteExist(client))
+    if (!DoesPlayerInviteExist(client))
     {
         CPrintToChat(client, "Chat - No invite");
         return;

@@ -58,6 +58,7 @@ public void OnClientPutInServer(int client)
     g_pPlayer[client].PlayerID = -1;
     g_pPlayer[client].GangID = -1;
     g_pPlayer[client].RangID = -1;
+    g_pPlayer[client].Leaving = false;
 
     char sQuery[128];
     g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\";", g_pPlayer[client].CommunityID);
@@ -72,7 +73,10 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
+    g_pPlayer[client].Leaving = true;
+
     invite_OnClientDisconnect(client);
-    
     RemoveInactiveGangFromArrays();
+
+    g_pPlayer[client].Leaving = false;
 }

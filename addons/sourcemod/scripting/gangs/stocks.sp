@@ -307,6 +307,38 @@ bool IsGangValid(int gangid)
     return false;
 }
 
+bool AreGangSettingsLoaded(int gangid)
+{
+    LoopArray(g_aGangSettings, i)
+    {
+        Settings setting;
+        g_aGangSettings.GetArray(i, setting, sizeof(setting));
+
+        if (setting.GangID == gangid)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool AreGangRangsLoaded(int gangid)
+{
+    LoopArray(g_aGangRangs, i)
+    {
+        Rangs rang;
+        g_aGangRangs.GetArray(i, rang, sizeof(rang));
+
+        if (rang.GangID == gangid)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void RemoveInactiveGangFromArrays()
 {
     bool bPlayers = false;
@@ -319,7 +351,7 @@ void RemoveInactiveGangFromArrays()
 
         LoopClients(client)
         {
-            if (g_pPlayer[client].GangID == gang.GangID)
+            if (!g_pPlayer[client].Leaving && g_pPlayer[client].GangID == gang.GangID)
             {
                 bPlayers = true;
                 break;
@@ -328,6 +360,11 @@ void RemoveInactiveGangFromArrays()
 
         if (!bPlayers)
         {
+            if (g_bDebug)
+            {
+                LogMessage("No players found... Removing rangs and settings for %s.", gang.Name);
+            }
+
             RemoveRangsFromArray(gang.GangID);
             RemoveSettingsFromArray(gang.GangID);
         }
@@ -346,6 +383,11 @@ void RemoveInactiveGangFromArrays()
 
         if (!bInvites && !bPlayers)
         {
+            if (g_bDebug)
+            {
+                LogMessage("No players or invites found... Removing %s from gangs array.", gang.Name);
+            }
+
             RemoveGangFromArray(gang.GangID);
         }
     }

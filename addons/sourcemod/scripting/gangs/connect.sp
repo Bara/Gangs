@@ -331,7 +331,15 @@ public void Query_Select_GangPlayers(Database db, DBResultSet results, const cha
             if (!IsGangValid(g_pPlayer[client].GangID))
             {
                 LoadGang(g_pPlayer[client].GangID);
+            }
+
+            if (AreGangSettingsLoaded(g_pPlayer[client].GangID))
+            {
                 LoadSettings(g_pPlayer[client].GangID);
+            }
+
+            if (AreGangRangsLoaded(g_pPlayer[client].GangID))
+            {
                 LoadRangs(g_pPlayer[client].GangID);
             }
         }
@@ -423,8 +431,8 @@ public void Query_Select_GangSettings(Database db, DBResultSet results, const ch
 
 void LoadRangs(int gangid)
 {
-    char sQuery[128];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`, `rang` FROM `gang_settings` WHERE `gangid` = '%d';", gangid);
+    char sQuery[256];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`, `rang` FROM `gang_rangs` WHERE `gangid` = '%d';", gangid);
 
     if (g_bDebug)
     {
