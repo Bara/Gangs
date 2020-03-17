@@ -331,6 +331,8 @@ public void Query_Select_GangPlayers(Database db, DBResultSet results, const cha
             if (!IsGangValid(g_pPlayer[client].GangID))
             {
                 LoadGang(g_pPlayer[client].GangID);
+                LoadSettings(g_pPlayer[client].GangID);
+                LoadRangs(g_pPlayer[client].GangID);
             }
         }
     }
@@ -353,7 +355,6 @@ void LoadGang(int gangid)
 
     g_dDB.Query(Query_Select_Gangs, sQuery, iIndex);
 }
-
 
 public void Query_Select_Gangs(Database db, DBResultSet results, const char[] error, int index)
 {
@@ -379,5 +380,87 @@ public void Query_Select_Gangs(Database db, DBResultSet results, const char[] er
         }
 
         g_aGangs.SetArray(index, gang, sizeof(gang));
+    }
+}
+
+void LoadSettings(int gangid)
+{
+    char sQuery[128];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `key`, `value`, `purchased` FROM `gang_settings` WHERE `gangid` = '%d';", gangid);
+
+    if (g_bDebug)
+    {
+        LogMessage("(LoadSettings) Query: \"%s\"", sQuery);
+    }
+
+    g_dDB.Query(Query_Select_GangSettings, sQuery, gangid);
+}
+
+public void Query_Select_GangSettings(Database db, DBResultSet results, const char[] error, int gangid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Select_GangSettings) Error: %s", error);
+        return;
+    }
+
+    while (results.FetchRow())
+    {
+        Settings setting;
+        setting.GangID = gangid;
+        results.FetchString(0, setting.Key, sizeof(Settings::Key));
+        results.FetchString(1, setting.Value, sizeof(Settings::Value));
+        setting.Bought = view_as<bool>(results.FetchInt(2));
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Select_GangSettings) Added \"%s\" to gang settings cache (GangID: %d, Value: %s, Bought: %d).", setting.Key, setting.GangID, setting.Value, setting.Bought);
+        }
+
+        g_aGangSettings.PushArray(setting, sizeof(setting));
+    }
+}
+
+void LoadRangs(int gangid)
+{
+    char sQuery[128];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`, `rang` FROM `gang_settings` WHERE `gangid` = '%d';", gangid);
+
+    if (g_bDebug)
+    {
+        LogMessage("(LoadRangs) Query: \"%s\"", sQuery);
+    }
+
+    g_dDB.Query(Query_Select_GangRangs, sQuery, gangid);
+}
+
+public void Query_Select_GangRangs(Database db, DBResultSet results, const char[] error, int gangid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(Query_Select_GangRangs) Error: %s", error);
+        return;
+    }
+
+    while (results.FetchRow())
+    {
+        Rangs rang;
+        rang.GangID = gangid;
+        rang.RangID = results.FetchInt(0);
+        rang.Level = results.FetchInt(1);
+        rang.Invite = view_as<bool>(results.FetchInt(2));
+        rang.Kick = view_as<bool>(results.FetchInt(3));
+        rang.Promote = view_as<bool>(results.FetchInt(4));
+        rang.Demote = view_as<bool>(results.FetchInt(5));
+        rang.Upgrade = view_as<bool>(results.FetchInt(6));
+        rang.Manager = view_as<bool>(results.FetchInt(7));
+        results.FetchString(8, rang.Name, sizeof(Rangs::Name));
+
+        if (g_bDebug)
+        {
+            LogMessage("(Query_Select_GangRangs) Added \"%s\" to gang rangs cache (GangID: %d, RangID: %d, Level: %d, Invite: %d, Kick: %d, Promote: %d, Demote: %d, Upgrade: %d, Manager: %d).", rang.Name, rang.GangID, rang.RangID, rang.Level, rang.Invite, rang.Kick, rang.Promote, rang.Demote, rang.Upgrade, rang.Manager);
+        }
+
+        g_aGangRangs.PushArray(rang, sizeof(rang));
     }
 }
