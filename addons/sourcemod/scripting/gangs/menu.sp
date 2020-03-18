@@ -34,8 +34,9 @@ void ShowGangMenu(int client)
     }
 
     Menu menu = new Menu(Menu_GangMain);
-    menu.SetTitle("%s | %s", sPrefix, sName);
-    menu.AddItem("", "Nothing yet...", ITEMDRAW_DISABLED);
+    menu.SetTitle("%s | %s\n ", sPrefix, sName);
+    menu.AddItem("online", "Online players");
+    menu.AddItem("players", "All players");
     menu.ExitBackButton = false;
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
@@ -43,8 +44,128 @@ void ShowGangMenu(int client)
 
 public int Menu_GangMain(Menu menu, MenuAction action, int client, int param)
 {
-    if (action == MenuAction_End)
+    if (action == MenuAction_Select)
+    {
+        char sParam[18];
+        menu.GetItem(param, sParam, sizeof(sParam));
+
+        if (StrEqual(sParam, "online", false))
+        {
+            ShowGangOnlinePlayers(client);
+        }
+        else if (StrEqual(sParam, "players", false))
+        {
+            ShowGangPlayers(client);
+        }
+    }
+    else if (action == MenuAction_End)
     {
         delete menu;
     }
+}
+
+void ShowGangOnlinePlayers(int client)
+{
+    char sName[MAX_GANGS_NAME_LENGTH], sPrefix[MAX_GANGS_PREFIX_LENGTH];
+
+    GetGangName(g_pPlayer[client].GangID, sName, sizeof(sName));
+    GetGangPrefix(g_pPlayer[client].GangID, sPrefix, sizeof(sPrefix));
+
+    Menu menu = new Menu(Menu_GangOnlinePlayers);
+    menu.SetTitle("%s | %s\nPlayers online:\n ", sPrefix, sName);
+
+    char sPlayer[MAX_NAME_LENGTH];
+    LoopClients(i)
+    {
+        if (g_pPlayer[i].GangID == g_pPlayer[client].GangID)
+        {
+            if (GetClientName(i, sPlayer, sizeof(sPlayer)))
+            {
+                menu.AddItem("", sPlayer, ITEMDRAW_DISABLED);
+            }
+        }
+    }
+
+    menu.ExitBackButton = true;
+    menu.ExitButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int Menu_GangOnlinePlayers(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Cancel)
+    {
+        if(param == MenuCancel_ExitBack)
+        {
+            ShowGangMenu(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+    
+}
+
+void ShowGangPlayers(int client)
+{
+    char sQuery[256];
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT players.name, gang_rangs.rang FROM players, gang_players, gang_rangs WHERE gang_players.gangid = '%d' AND gang_players.playerid = players.id AND gang_players.rang = gang_rangs.id;", g_pPlayer[client].GangID);
+    g_dDB.Query(menu_Query_Select_GangPlayers, sQuery, GetClientUserId(client));
+}
+
+public void menu_Query_Select_GangPlayers(Database db, DBResultSet results, const char[] error, int userid)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(menu_Query_Select_GangPlayers) Error: %s", error);
+        return;
+    }
+    
+    int client = GetClientOfUserId(userid);
+
+    if (IsClientValid(client))
+    {
+            char sName[MAX_GANGS_NAME_LENGTH], sPrefix[MAX_GANGS_PREFIX_LENGTH];
+
+            GetGangName(g_pPlayer[client].GangID, sName, sizeof(sName));
+            GetGangPrefix(g_pPlayer[client].GangID, sPrefix, sizeof(sPrefix));
+
+            Menu menu = new Menu(Menu_GangPlayers);
+            menu.SetTitle("%s | %s\nAll players:\n ", sPrefix, sName);
+
+            char sPlayer[MAX_NAME_LENGTH];
+            char sRang[24];
+            char sText[MAX_NAME_LENGTH + 32];
+
+            while (results.FetchRow())
+            {
+                results.FetchString(0, sPlayer, sizeof(sPlayer));
+                results.FetchString(1, sRang, sizeof(sRang));
+
+                Format(sText, sizeof(sText), "%s | %s", sRang, sPlayer);
+                menu.AddItem("", sText, ITEMDRAW_DISABLED);
+            }
+
+            menu.ExitBackButton = true;
+            menu.ExitButton = true;
+            menu.Display(client, MENU_TIME_FOREVER);
+
+    }
+}
+
+public int Menu_GangPlayers(Menu menu, MenuAction action, int client, int param)
+{
+    if (action == MenuAction_Cancel)
+    {
+        if(param == MenuCancel_ExitBack)
+        {
+            ShowGangMenu(client);
+        }
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+    
 }
