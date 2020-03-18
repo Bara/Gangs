@@ -371,6 +371,11 @@ void AddPlayerToGang(int target, int gangid)
     pack3.WriteCell(gangid);
     pack3.WriteCell(iRang);
     g_dDB.Query(Query_Insert_GangPlayers, sQuery, pack3);
+
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '1', \"Join\");", gangid, g_pPlayer[target].PlayerID);
+    DataPack pack4 = new DataPack();
+    pack4.WriteString("AddPlayerToGang - Player Log");
+    g_dDB.Query(Query_DoNothing, sQuery, pack4);
 }
 
 public void Query_Insert_GangPlayers(Database db, DBResultSet results, const char[] error, DataPack pack)
