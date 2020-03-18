@@ -59,6 +59,16 @@ ArrayList AddRangsToTransaction(int gangid, Transaction action)
     rang.Manager = true;
     aRangs.PushArray(rang, sizeof(rang));
 
+    Format(rang.Name, sizeof(Rang::Name), "Trial");
+    rang.Level = 1;
+    rang.Invite = false;
+    rang.Kick = false;
+    rang.Promote = false;
+    rang.Demote = false;
+    rang.Upgrade = false;
+    rang.Manager = false;
+    aRangs.PushArray(rang, sizeof(rang));
+
     if (kvConfig.GotoFirstSubKey(false))
     {
         do
