@@ -63,4 +63,5 @@ enum struct Configs {
     ConVar StartSlots;
     ConVar MaxLevel;
     ConVar InviteReactionTime;
+    ConVar RemoveInvites;
 }

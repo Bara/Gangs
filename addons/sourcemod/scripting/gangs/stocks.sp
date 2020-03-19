@@ -276,13 +276,13 @@ int GetLowerGangRang(int gangid)
 public void Query_DoNothing(Database db, DBResultSet results, const char[] error, DataPack pack)
 {
     pack.Reset();
-    char from[64];
-    pack.ReadString(from, sizeof(from));
+    char sFrom[64];
+    pack.ReadString(sFrom, sizeof(sFrom));
     delete pack;
 
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_DoNothing) (%s) Error: %s", from, error);
+        SetFailState("(Query_DoNothing) (%s) Error: %s", sFrom, error);
         return;
     }
 }
@@ -443,4 +443,25 @@ void RemoveGangFromArray(int gangid)
             g_aGangs.Erase(i);
         }
     }
+}
+
+bool IsClientOwner(int client)
+{
+    bool bOwner = false;
+    LoopArray(g_aGangRangs, i)
+    {
+        Rangs rang;
+        g_aGangRangs.GetArray(i, rang, sizeof(rang));
+
+        if (g_pPlayer[client].GangID == rang.GangID)
+        {
+            if (StrEqual(rang.Name, "Owner", false))
+            {
+                bOwner = true;
+                break;
+            }
+        }
+    }
+
+    return bOwner;
 }

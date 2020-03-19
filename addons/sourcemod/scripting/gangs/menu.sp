@@ -37,6 +37,17 @@ void ShowGangMenu(int client)
     menu.SetTitle("%s | %s\n ", sPrefix, sName);
     menu.AddItem("online", "Online players");
     menu.AddItem("players", "All players");
+
+    if (!IsClientOwner(client))
+    {
+        menu.AddItem("leave", "Leave gang");
+    }
+    /* else
+    {
+        menu.AddItem("delete", "Delete gang");
+        menu.AddItem("transfer", "Transfer ownership");
+    } */
+    
     menu.ExitBackButton = false;
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
@@ -56,6 +67,10 @@ public int Menu_GangMain(Menu menu, MenuAction action, int client, int param)
         else if (StrEqual(sParam, "players", false))
         {
             ShowGangPlayers(client);
+        }
+        else if (StrEqual(sParam, "leave", false))
+        {
+            ShowGangLeaveConfirmation(client);
         }
     }
     else if (action == MenuAction_End)

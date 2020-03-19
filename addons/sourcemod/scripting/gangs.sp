@@ -17,6 +17,7 @@ bool g_bDebug = true;
 #include "gangs/create.sp"
 #include "gangs/menu.sp"
 #include "gangs/invite.sp"
+#include "gangs/leave.sp"
 
 public Plugin myinfo =
 {
