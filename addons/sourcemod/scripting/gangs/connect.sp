@@ -333,12 +333,12 @@ public void Query_Select_GangPlayers(Database db, DBResultSet results, const cha
                 LoadGang(g_pPlayer[client].GangID);
             }
 
-            if (AreGangSettingsLoaded(g_pPlayer[client].GangID))
+            if (!AreGangSettingsLoaded(g_pPlayer[client].GangID))
             {
                 LoadSettings(g_pPlayer[client].GangID);
             }
 
-            if (AreGangRangsLoaded(g_pPlayer[client].GangID))
+            if (!AreGangRangsLoaded(g_pPlayer[client].GangID))
             {
                 LoadRangs(g_pPlayer[client].GangID);
             }

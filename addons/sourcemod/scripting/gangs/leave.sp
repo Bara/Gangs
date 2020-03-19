@@ -45,7 +45,7 @@ void LeaveGang(int client)
     */
 
     char sQuery[256];
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '0', \"Leave\");", g_pPlayer[client].GangID, g_pPlayer[client].PlayerID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, `playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '0', \"Leave\");", g_pPlayer[client].GangID, g_pPlayer[client].PlayerID);
     
     if (g_bDebug)
     {
@@ -108,8 +108,10 @@ public void Query_Delete_GangPlayer(Database db, DBResultSet results, const char
     if (IsClientValid(client))
     {
         CPrintToGang(iGang, "Chat - %N left the gang.", client);
-        CPrintToChat(client, "Chat - You left the gang.", client);
+        CPrintToChat(client, "Chat - You left the gang.");
     }
+
+    RemoveInactiveGangFromArrays();
 }
 
 void RemoveInviterInvitesFromArray(int client)
