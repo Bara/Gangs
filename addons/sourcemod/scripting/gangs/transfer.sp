@@ -13,7 +13,7 @@ void ShowTransferPlayerlist(int owner)
             if (GetClientName(i, sPlayer, sizeof(sPlayer)))
             {
                 IntToString(GetClientUserId(i), sUserID, sizeof(sUserID));
-                menu.AddItem(sUserID, sPlayer, ITEMDRAW_DISABLED);
+                menu.AddItem(sUserID, sPlayer);
             }
         }
     }
@@ -25,42 +25,45 @@ void ShowTransferPlayerlist(int owner)
 
 public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int param)
 {
-    if (action == MenuAction_Cancel)
+    if (action == MenuAction_Select)
+    {
+        PrintToServer("(Menu_GangTransferPlayer) 3");
+        char sUserID[12];
+        menu.GetItem(param, sUserID, sizeof(sUserID));
+
+        int target = GetClientOfUserId(StringToInt(sUserID));
+
+        if (!IsClientValid(target))
+        {
+            CPrintToChat(owner, "Chat - Target is no longer valid");
+            return;
+        }
+
+        PrintToServer("(Menu_GangTransferPlayer) 4");
+
+        if (g_pPlayer[owner].GangID == g_pPlayer[target].GangID)
+        {
+            if (Config.TransferRank.BoolValue)
+            {
+                int iTargetRank = g_pPlayer[target].RankID;
+
+                g_pPlayer[target].RankID = g_pPlayer[owner].RankID;
+                g_pPlayer[owner].RankID = iTargetRank;
+            }
+            else
+            {
+                g_pPlayer[target].RankID = g_pPlayer[owner].RankID;
+                g_pPlayer[owner].RankID = GetTrialRankID(g_pPlayer[owner].GangID);
+            }
+
+            UpdateMySQLRanks(owner, target);
+        }
+    }
+    else if (action == MenuAction_Cancel)
     {
         if(param == MenuCancel_ExitBack)
         {
             ShowGangMenu(owner);
-        }
-        else
-        {
-            char sUserID[12];
-            menu.GetItem(param, sUserID, sizeof(sUserID));
-
-            int target = GetClientOfUserId(StringToInt(sUserID));
-
-            if (!IsClientValid(target))
-            {
-                CPrintToChat(owner, "Chat - Target is no longer valid");
-                return;
-            }
-
-            if (g_pPlayer[owner].GangID == g_pPlayer[target].GangID)
-            {
-                if (Config.TransferRank.BoolValue)
-                {
-                    int iTargetRank = g_pPlayer[target].RankID;
-
-                    g_pPlayer[target].RankID = g_pPlayer[owner].RankID;
-                    g_pPlayer[owner].RankID = iTargetRank;
-                }
-                else
-                {
-                    g_pPlayer[target].RankID = g_pPlayer[owner].RankID;
-                    g_pPlayer[owner].RankID = GetTrialRankID(g_pPlayer[owner].GangID);
-                }
-
-                UpdateMySQLRanks(owner, target);
-            }
         }
     }
     else if (action == MenuAction_End)
@@ -72,7 +75,7 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
 void UpdateMySQLRanks(int iOwner, int iTarget)
 {
     char sQuery[128];
-    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rang = '%d' WHERE `playerid` = '%d';", g_pPlayer[iOwner].RankID, g_pPlayer[iOwner].PlayerID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rank = '%d' WHERE `playerid` = '%d';", g_pPlayer[iOwner].RankID, g_pPlayer[iOwner].PlayerID);
 
     DataPack pack = new DataPack();
     pack.WriteCell(g_pPlayer[iTarget].PlayerID);
@@ -98,7 +101,7 @@ public void transfer_Query_Update_RankOwner(Database db, DBResultSet results, co
     delete pack;
 
     char sQuery[128];
-    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rang = '%d' WHERE `playerid` = '%d';", iRankID, iTargetID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rank = '%d' WHERE `playerid` = '%d';", iRankID, iTargetID);
 
     pack = new DataPack();
     pack.WriteCell(iTargetID);

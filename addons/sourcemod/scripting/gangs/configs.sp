@@ -15,7 +15,7 @@ void configs_OnPluginStart()
     Config.InviteReactionTime = AutoExecConfig_CreateConVar("gangs_invite_reaction_time", "10", "Time in seconds to react for an invite.", _, true, 10.0, false);
     Config.RemoveInvites = AutoExecConfig_CreateConVar("gangs_remove_invites", "1", "Remove active invites from the player who left the gang.", _, true, 0.0, true, 1.0);
     Config.TransferToMembers = AutoExecConfig_CreateConVar("gangs_restrict_transfer", "1", "Restrict transfer ownership to just gang members?", _, true, 0.0, true, 1.0);
-    Config.TransferRank = AutoExecConfig_CreateConVar("gangs_transfer_rank", "1", "Assign the old owner the old rank from new owner? (gangs_restrict_transfer must be 1 for this", _, true, 0.0, true, 1.0);
+    Config.TransferRank = AutoExecConfig_CreateConVar("gangs_transfer_rank", "1", "Assign the old owner the old rank from new owner? (gangs_restrict_transfer must be 1 for this)", _, true, 0.0, true, 1.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }

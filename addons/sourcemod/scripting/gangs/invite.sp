@@ -372,7 +372,7 @@ void AddPlayerToGang(int target, int gangid)
     pack3.WriteCell(iRank);
     g_dDB.Query(Query_Insert_GangPlayers, sQuery, pack3);
 
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '1', \"Join\");", gangid, g_pPlayer[target].PlayerID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, `playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '1', \"Join\");", gangid, g_pPlayer[target].PlayerID);
     
     if (g_bDebug)
     {
