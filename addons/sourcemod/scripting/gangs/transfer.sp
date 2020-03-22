@@ -6,16 +6,27 @@ void ShowTransferPlayerlist(int owner)
     char sPlayer[MAX_NAME_LENGTH];
     char sUserID[12];
 
+    int iCount = 0;
+
     LoopClients(i)
     {
-        if (i != owner && (!Config.TransferToMembers.BoolValue || Config.TransferToMembers.BoolValue && g_pPlayer[i].GangID == g_pPlayer[owner].GangID))
+        if (i != owner && (!Config.TransferToMembers.BoolValue || (Config.TransferToMembers.BoolValue && g_pPlayer[i].GangID == g_pPlayer[owner].GangID)))
         {
             if (GetClientName(i, sPlayer, sizeof(sPlayer)))
             {
                 IntToString(GetClientUserId(i), sUserID, sizeof(sUserID));
                 menu.AddItem(sUserID, sPlayer);
+
+                iCount++;
             }
         }
+    }
+
+    if (iCount == 0)
+    {
+        delete menu;
+        CPrintToChat(owner, "Chat - No players found");
+        return;
     }
 
     menu.ExitBackButton = true;
@@ -27,7 +38,6 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
 {
     if (action == MenuAction_Select)
     {
-        PrintToServer("(Menu_GangTransferPlayer) 3");
         char sUserID[12];
         menu.GetItem(param, sUserID, sizeof(sUserID));
 
@@ -38,8 +48,6 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
             CPrintToChat(owner, "Chat - Target is no longer valid");
             return;
         }
-
-        PrintToServer("(Menu_GangTransferPlayer) 4");
 
         if (g_pPlayer[owner].GangID == g_pPlayer[target].GangID)
         {
@@ -57,6 +65,21 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
             }
 
             UpdateMySQLRanks(owner, target);
+        }
+        else
+        {
+            AddPlayerToGang(target, g_pPlayer[owner].GangID, g_pPlayer[owner].RankID);
+            
+            g_pPlayer[owner].RankID = GetTrialRankID(g_pPlayer[owner].GangID);
+            
+            char sQuery[128];
+            g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rank = '%d' WHERE `playerid` = '%d';", g_pPlayer[owner].RankID, g_pPlayer[owner].PlayerID);
+
+            DataPack pack = new DataPack();
+            pack.WriteCell(g_pPlayer[target].PlayerID);
+            pack.WriteCell(g_pPlayer[owner].PlayerID);
+
+            g_dDB.Query(transfer_Query_Update_RankTarget, sQuery, pack);
         }
     }
     else if (action == MenuAction_Cancel)

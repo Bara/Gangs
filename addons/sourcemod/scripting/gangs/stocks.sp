@@ -251,28 +251,6 @@ int GetClientOfPlayerID(int playerid)
     return -1;
 }
 
-int GetLowerGangRank(int gangid)
-{
-    int iRank = -1;
-    int iLevel = -1;
-    LoopArray(g_aGangRanks, i)
-    {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(rank));
-
-        if (rank.GangID == gangid)
-        {
-            if (iLevel == -1 || iLevel > rank.Level)
-            {
-                iLevel = rank.Level;
-                iRank = rank.RankID;
-            }
-        }
-    }
-
-    return iRank;
-}
-
 public void Query_DoNothing(Database db, DBResultSet results, const char[] error, DataPack pack)
 {
     pack.Reset();

@@ -318,7 +318,7 @@ void RemovePlayerInvitesFromArray(int client, int gangid = -1)
     }
 }
 
-void AddPlayerToGang(int target, int gangid)
+void AddPlayerToGang(int target, int gangid, int rank = -1)
 {
     RemovePlayerInvitesFromArray(target, gangid);
 
@@ -357,9 +357,12 @@ void AddPlayerToGang(int target, int gangid)
     g_dDB.Query(Query_DoNothing, sQuery, pack2);
 
 
-    int iRank = GetLowerGangRank(gangid);
+    if (rank == -1)
+    {
+        rank = GetTrialRankID(gangid);
+    }
 
-    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d');", g_pPlayer[target].PlayerID, gangid, iRank);
+    g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d');", g_pPlayer[target].PlayerID, gangid, rank);
 
     if (g_bDebug)
     {
@@ -369,7 +372,7 @@ void AddPlayerToGang(int target, int gangid)
     DataPack pack3 = new DataPack();
     pack3.WriteCell(GetClientUserId(target));
     pack3.WriteCell(gangid);
-    pack3.WriteCell(iRank);
+    pack3.WriteCell(rank);
     g_dDB.Query(Query_Insert_GangPlayers, sQuery, pack3);
 
     g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, `playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '1', \"Join\");", gangid, g_pPlayer[target].PlayerID);
