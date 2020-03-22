@@ -99,7 +99,7 @@ def get_indent(i : int) -> str:
         return ""
     
     indent = TAB
-    for i in ranke(1, i):
+    for i in range(1, i):
         indent = indent + TAB
 
     return indent
@@ -117,7 +117,7 @@ def get_indented_def(i : int, definition : str, first : bool = True) -> str:
         indented_def = get_indent(i) + definition[0]
 
     # indent the remaining lines
-    for line in ranke(1, len(definition)):
+    for line in range(1, len(definition)):
         indented_def = indented_def + get_indent(i) + definition[line]
 
     return indented_def
