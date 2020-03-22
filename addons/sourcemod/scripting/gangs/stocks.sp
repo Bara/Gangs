@@ -363,7 +363,10 @@ void RemoveInactiveGangFromArrays(int gangid)
     }
     else
     {
-        CheckGang(gangid);
+        if (gangid != -1)
+        {
+            CheckGang(gangid);
+        }
     }
 }
 
