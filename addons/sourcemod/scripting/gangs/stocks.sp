@@ -469,7 +469,7 @@ bool IsClientOwner(int client)
         Rangs rang;
         g_aGangRangs.GetArray(i, rang, sizeof(rang));
 
-        if (g_pPlayer[client].GangID == rang.GangID)
+        if (g_pPlayer[client].GangID == rang.GangID && g_pPlayer[client].RangID == rang.RangID)
         {
             if (StrEqual(rang.Name, "Owner", false))
             {
