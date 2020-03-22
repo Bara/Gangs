@@ -58,6 +58,8 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
                     g_pPlayer[target].RankID = g_pPlayer[owner].RankID;
                     g_pPlayer[owner].RankID = GetTrialRankID(g_pPlayer[owner].GangID);
                 }
+
+                UpdateMySQLRanks(owner, target);
             }
         }
     }
@@ -65,4 +67,61 @@ public int Menu_GangTransferPlayer(Menu menu, MenuAction action, int owner, int 
     {
         delete menu;
     }
+}
+
+void UpdateMySQLRanks(int iOwner, int iTarget)
+{
+    char sQuery[128];
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rang = '%d' WHERE `playerid` = '%d';", g_pPlayer[iOwner].RankID, g_pPlayer[iOwner].PlayerID);
+
+    DataPack pack = new DataPack();
+    pack.WriteCell(g_pPlayer[iTarget].PlayerID);
+    pack.WriteCell(g_pPlayer[iTarget].RankID);
+    pack.WriteCell(g_pPlayer[iOwner].PlayerID);
+
+    g_dDB.Query(transfer_Query_Update_RankOwner, sQuery, pack);
+}
+
+public void transfer_Query_Update_RankOwner(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(transfer_Query_Update_RankOwner) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+    int iTargetID = pack.ReadCell();
+    int iRankID = pack.ReadCell();
+    int iOwnerID = pack.ReadCell();
+    delete pack;
+
+    char sQuery[128];
+    g_dDB.Format(sQuery, sizeof(sQuery), "UPDATE `gang_players` SET rang = '%d' WHERE `playerid` = '%d';", iRankID, iTargetID);
+
+    pack = new DataPack();
+    pack.WriteCell(iTargetID);
+    pack.WriteCell(iOwnerID);
+
+    g_dDB.Query(transfer_Query_Update_RankTarget, sQuery, pack);
+}
+
+public void transfer_Query_Update_RankTarget(Database db, DBResultSet results, const char[] error, DataPack pack)
+{
+    if (!IsValidDatabase(db, error))
+    {
+        SetFailState("(transfer_Query_Update_RankTarget) Error: %s", error);
+        delete pack;
+        return;
+    }
+
+    pack.Reset();
+
+    int iTarget = GetClientOfPlayerID(pack.ReadCell());
+    int iOwner = GetClientOfPlayerID(pack.ReadCell());
+
+    delete pack;
+
+    CPrintToGang(g_pPlayer[iTarget].GangID, "Chat - %N transferred the gang ownership to %N", iOwner, iTarget);
 }
