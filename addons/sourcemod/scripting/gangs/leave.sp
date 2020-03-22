@@ -96,7 +96,7 @@ public void Query_Delete_GangPlayer(Database db, DBResultSet results, const char
     delete pack;
 
     g_pPlayer[client].GangID = -1;
-    g_pPlayer[client].RangID = -1;
+    g_pPlayer[client].RankID = -1;
 
     if (IsClientValid(client))
     {

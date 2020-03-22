@@ -326,12 +326,12 @@ public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] er
         setting.Bought = true;
         g_aGangSettings.PushArray(setting, sizeof(setting));
 
-        ArrayList aRangs = AddRangsToTransaction(iGang, action);
+        ArrayList aRanks = AddRanksToTransaction(iGang, action);
 
         pack = new DataPack();
         pack.WriteCell(userid);
         pack.WriteCell(iGang);
-        pack.WriteCell(aRangs);
+        pack.WriteCell(aRanks);
         pack.WriteString(gang.Name);
         pack.WriteString(gang.Prefix);
         g_dDB.Execute(action, TXN_OnSuccess, TXN_OnError, pack);
@@ -348,7 +348,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
     pack.Reset();
     int userid = pack.ReadCell();
     int gangid = pack.ReadCell();
-    ArrayList aRangs = view_as<ArrayList>(pack.ReadCell());
+    ArrayList aRanks = view_as<ArrayList>(pack.ReadCell());
     char sName[32];
     pack.ReadString(sName, sizeof(sName));
     char sPrefix[16];
@@ -364,27 +364,27 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
 
         if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
         {
-            int iRang = results[i].InsertId;
+            int iRank = results[i].InsertId;
 
-            Rangs rRang;
-            for (int j = 0; j < aRangs.Length; j++)
+            Ranks rRank;
+            for (int j = 0; j < aRanks.Length; j++)
             {
-                Rang rang;
-                aRangs.GetArray(j, rang, sizeof(rang));
+                Rank rank;
+                aRanks.GetArray(j, rank, sizeof(rank));
 
-                if (queryData[i] == rang.Level)
+                if (queryData[i] == rank.Level)
                 {
-                    rRang.GangID = gangid;
-                    rRang.RangID = iRang;
-                    strcopy(rRang.Name, sizeof(Rangs::Name), rang.Name);
-                    rRang.Level = rang.Level;
-                    rRang.Invite = rang.Invite;
-                    rRang.Kick = rang.Kick;
-                    rRang.Promote = rang.Promote;
-                    rRang.Demote = rang.Demote;
-                    rRang.Upgrade = rang.Upgrade;
-                    rRang.Manager = rang.Manager;
-                    g_aGangRangs.PushArray(rRang, sizeof(rRang));
+                    rRank.GangID = gangid;
+                    rRank.RankID = iRank;
+                    strcopy(rRank.Name, sizeof(Ranks::Name), rank.Name);
+                    rRank.Level = rank.Level;
+                    rRank.Invite = rank.Invite;
+                    rRank.Kick = rank.Kick;
+                    rRank.Promote = rank.Promote;
+                    rRank.Demote = rank.Demote;
+                    rRank.Upgrade = rank.Upgrade;
+                    rRank.Manager = rank.Manager;
+                    g_aGangRanks.PushArray(rRank, sizeof(rRank));
                 }
             }
 
@@ -394,18 +394,18 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
             {
                 if (g_bDebug)
                 {
-                    LogMessage("(TXN_OnSuccess) ID for Rang Owner should be %d.", iRang);
+                    LogMessage("(TXN_OnSuccess) ID for Rank Owner should be %d.", iRank);
                 }
 
                 pack = new DataPack();
                 pack.WriteCell(userid);
                 pack.WriteCell(gangid);
-                pack.WriteCell(iRang);
+                pack.WriteCell(iRank);
                 pack.WriteString(sName);
                 pack.WriteString(sPrefix);
 
                 char sQuery[512];
-                g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rang`) VALUES ('%d', '%d', '%d');", g_pPlayer[client].PlayerID, gangid, iRang);
+                g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_players` (`playerid`, `gangid`, `rank`) VALUES ('%d', '%d', '%d');", g_pPlayer[client].PlayerID, gangid, iRank);
 
                 if (g_bDebug)
                 {
@@ -422,7 +422,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
 
 public void TXN_OnError(Database db, DataPack pack, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
-    LogError("(TXN_OnError) Error executing query (rang level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
+    LogError("(TXN_OnError) Error executing query (rank level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
     delete pack;
 }
 
@@ -439,7 +439,7 @@ public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const cha
 
     int userid = pack.ReadCell();
     int gangid = pack.ReadCell();
-    int rangid = pack.ReadCell();
+    int rankid = pack.ReadCell();
 
     char sName[32];
     pack.ReadString(sName, sizeof(sName));
@@ -459,6 +459,6 @@ public void Query_Insert_PlayerOwner(Database db, DBResultSet results, const cha
         InsertGangPlayerLogs(gangid, g_pPlayer[client].PlayerID, true, "create");
 
         g_pPlayer[client].GangID = gangid;
-        g_pPlayer[client].RangID = rangid;
+        g_pPlayer[client].RankID = rankid;
     }
 }

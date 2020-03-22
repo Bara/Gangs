@@ -1,7 +1,7 @@
 colors:
   default:      engine 1
   prefix:       green
-  highlight:    orange
+  highlight:    oranke
   player:       yellow
   teamcolor:    0x03
   warning:      lightred
@@ -17,7 +17,7 @@ ref_colors:
   darkblue:     0x0C
   purple:       0x03
   orchid:       0x0E
-  orange:       0x10
+  oranke:       0x10
   yellow:       0x09
   gold:         0x10
   lightgreen:   0x05

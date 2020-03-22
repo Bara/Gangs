@@ -18,6 +18,7 @@ bool g_bDebug = true;
 #include "gangs/menu.sp"
 #include "gangs/invite.sp"
 #include "gangs/leave.sp"
+#include "gangs/transfer.sp"
 
 public Plugin myinfo =
 {
@@ -58,7 +59,7 @@ public void OnClientPutInServer(int client)
 
     g_pPlayer[client].PlayerID = -1;
     g_pPlayer[client].GangID = -1;
-    g_pPlayer[client].RangID = -1;
+    g_pPlayer[client].RankID = -1;
     g_pPlayer[client].Leaving = false;
 
     char sQuery[128];

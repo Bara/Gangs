@@ -1,7 +1,7 @@
 enum struct Player {
     int PlayerID;
     int GangID;
-    int RangID;
+    int RankID;
     bool Leaving;
     char CommunityID[18];
 }
@@ -22,7 +22,7 @@ enum struct Settings {
     char Value[128];
 }
 
-enum struct Rang {
+enum struct Rank {
     int Level;
     bool Invite;
     bool Kick;
@@ -33,9 +33,9 @@ enum struct Rang {
     char Name[32];
 }
 
-enum struct Rangs {
+enum struct Ranks {
     int GangID;
-    int RangID;
+    int RankID;
     int Level;
     bool Invite;
     bool Kick;
@@ -64,4 +64,6 @@ enum struct Configs {
     ConVar MaxLevel;
     ConVar InviteReactionTime;
     ConVar RemoveInvites;
+    ConVar TransferToMembers;
+    ConVar TransferRank;
 }

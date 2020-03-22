@@ -819,7 +819,7 @@ stock Handle MC_InitColorTrie() {
     SetTrieValue(hTrie, "darkkhaki", 0xBDB76B);
     SetTrieValue(hTrie, "darkmagenta", 0x8B008B);
     SetTrieValue(hTrie, "darkolivegreen", 0x556B2F);
-    SetTrieValue(hTrie, "darkorange", 0xFF8C00);
+    SetTrieValue(hTrie, "darkoranke", 0xFF8C00);
     SetTrieValue(hTrie, "darkorchid", 0x9932CC);
     SetTrieValue(hTrie, "darkred", 0x8B0000);
     SetTrieValue(hTrie, "darksalmon", 0xE9967A);
@@ -904,8 +904,8 @@ stock Handle MC_InitColorTrie() {
     SetTrieValue(hTrie, "oldlace", 0xFDF5E6);
     SetTrieValue(hTrie, "olive", 0x9EC34F);
     SetTrieValue(hTrie, "olivedrab", 0x6B8E23);
-    SetTrieValue(hTrie, "orange", 0xFFA500);
-    SetTrieValue(hTrie, "orangered", 0xFF4500);
+    SetTrieValue(hTrie, "oranke", 0xFFA500);
+    SetTrieValue(hTrie, "orankered", 0xFF4500);
     SetTrieValue(hTrie, "orchid", 0xDA70D6);
     SetTrieValue(hTrie, "palegoldenrod", 0xEEE8AA);
     SetTrieValue(hTrie, "palegreen", 0x98FB98);
@@ -937,7 +937,7 @@ stock Handle MC_InitColorTrie() {
     SetTrieValue(hTrie, "snow", 0xFFFAFA);
     SetTrieValue(hTrie, "springgreen", 0x00FF7F);
     SetTrieValue(hTrie, "steelblue", 0x4682B4);
-    SetTrieValue(hTrie, "strange", 0xCF6A32); // same as Strange item quality in TF2
+    SetTrieValue(hTrie, "stranke", 0xCF6A32); // same as Stranke item quality in TF2
     SetTrieValue(hTrie, "tan", 0xD2B48C);
     SetTrieValue(hTrie, "teal", 0x008080);
     SetTrieValue(hTrie, "thistle", 0xD8BFD8);

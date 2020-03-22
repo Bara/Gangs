@@ -35,10 +35,10 @@ static char sQueries[][1024] = {
         "UNIQUE KEY (`gangid`, `key`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "CREATE TABLE IF NOT EXISTS `gang_rangs` (" ...
+    "CREATE TABLE IF NOT EXISTS `gang_ranks` (" ...
         "`id` INT NOT NULL AUTO_INCREMENT," ...
         "`gangid` INT NOT NULL," ...
-        "`rang` VARCHAR(24) COLLATE utf8mb4_unicode_ci NOT NULL," ...
+        "`rank` VARCHAR(24) COLLATE utf8mb4_unicode_ci NOT NULL," ...
         "`level` TINYINT NOT NULL," ...
         "`perm_invite` TINYINT NOT NULL," ...
         "`perm_kick` TINYINT NOT NULL," ...
@@ -46,7 +46,7 @@ static char sQueries[][1024] = {
         "`perm_demote` TINYINT NOT NULL," ...
         "`perm_upgrade` TINYINT NOT NULL," ...
         "`perm_manager` TINYINT NOT NULL," ...
-        "UNIQUE KEY (`gangid`, `rang`)," ...
+        "UNIQUE KEY (`gangid`, `rank`)," ...
         "UNIQUE KEY (`gangid`, `level`)," ...
         "PRIMARY KEY (`id`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
@@ -54,7 +54,7 @@ static char sQueries[][1024] = {
     "CREATE TABLE IF NOT EXISTS `gang_players` (" ...
         "`playerid` INT NOT NULL," ...
         "`gangid` INT NOT NULL," ...
-        "`rang` TINYINT NOT NULL," ...
+        "`rank` TINYINT NOT NULL," ...
         "UNIQUE KEY (`playerid`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
     
@@ -112,7 +112,7 @@ static char sQueries[][1024] = {
 };
 
 static char sTables[][] = {
-    "players", "gangs", "gang_settings", "gang_rangs", "gang_players", "gang_invites",
+    "players", "gangs", "gang_settings", "gang_ranks", "gang_players", "gang_invites",
     "gang_logs", "gang_logs_settings", "gang_logs_players", "gang_logs_points"
 };
 
@@ -200,11 +200,11 @@ public void Query_CreateTable(Database db, DBResultSet results, const char[] err
     {
         delete g_aGangs;
         delete g_aGangSettings;
-        delete g_aGangRangs;
+        delete g_aGangRanks;
 
         g_aGangs = new ArrayList(sizeof(Gang));
         g_aGangSettings = new ArrayList(sizeof(Settings));
-        g_aGangRangs = new ArrayList(sizeof(Rangs));
+        g_aGangRanks = new ArrayList(sizeof(Ranks));
         g_aPlayerInvites = new ArrayList(sizeof(Invite));
 
         LateLoadPlayers(); // TODO: Move this when gang stuff is completely loaded
@@ -300,7 +300,7 @@ public void Query_Update_Player(Database db, DBResultSet results, const char[] e
     if (IsClientValid(client))
     {
         char sQuery[128];
-        g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `rang` FROM `gang_players` WHERE `playerid` = '%d';", g_pPlayer[client].PlayerID);
+        g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `gangid`, `rank` FROM `gang_players` WHERE `playerid` = '%d';", g_pPlayer[client].PlayerID);
 
         if (g_bDebug)
         {
@@ -326,7 +326,7 @@ public void Query_Select_GangPlayers(Database db, DBResultSet results, const cha
         if (results.FetchRow())
         {
             g_pPlayer[client].GangID = results.FetchInt(0);
-            g_pPlayer[client].RangID = results.FetchInt(1);
+            g_pPlayer[client].RankID = results.FetchInt(1);
 
             if (!IsGangValid(g_pPlayer[client].GangID))
             {
@@ -338,9 +338,9 @@ public void Query_Select_GangPlayers(Database db, DBResultSet results, const cha
                 LoadSettings(g_pPlayer[client].GangID);
             }
 
-            if (!AreGangRangsLoaded(g_pPlayer[client].GangID))
+            if (!AreGangRanksLoaded(g_pPlayer[client].GangID))
             {
-                LoadRangs(g_pPlayer[client].GangID);
+                LoadRanks(g_pPlayer[client].GangID);
             }
         }
     }
@@ -429,46 +429,46 @@ public void Query_Select_GangSettings(Database db, DBResultSet results, const ch
     }
 }
 
-void LoadRangs(int gangid)
+void LoadRanks(int gangid)
 {
     char sQuery[256];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`, `rang` FROM `gang_rangs` WHERE `gangid` = '%d';", gangid);
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `level`, `perm_invite`, `perm_kick`, `perm_promote`, `perm_demote`, `perm_upgrade`, `perm_manager`, `rank` FROM `gang_ranks` WHERE `gangid` = '%d';", gangid);
 
     if (g_bDebug)
     {
-        LogMessage("(LoadRangs) Query: \"%s\"", sQuery);
+        LogMessage("(LoadRanks) Query: \"%s\"", sQuery);
     }
 
-    g_dDB.Query(Query_Select_GangRangs, sQuery, gangid);
+    g_dDB.Query(Query_Select_GangRanks, sQuery, gangid);
 }
 
-public void Query_Select_GangRangs(Database db, DBResultSet results, const char[] error, int gangid)
+public void Query_Select_GangRanks(Database db, DBResultSet results, const char[] error, int gangid)
 {
     if (!IsValidDatabase(db, error))
     {
-        SetFailState("(Query_Select_GangRangs) Error: %s", error);
+        SetFailState("(Query_Select_GangRanks) Error: %s", error);
         return;
     }
 
     while (results.FetchRow())
     {
-        Rangs rang;
-        rang.GangID = gangid;
-        rang.RangID = results.FetchInt(0);
-        rang.Level = results.FetchInt(1);
-        rang.Invite = view_as<bool>(results.FetchInt(2));
-        rang.Kick = view_as<bool>(results.FetchInt(3));
-        rang.Promote = view_as<bool>(results.FetchInt(4));
-        rang.Demote = view_as<bool>(results.FetchInt(5));
-        rang.Upgrade = view_as<bool>(results.FetchInt(6));
-        rang.Manager = view_as<bool>(results.FetchInt(7));
-        results.FetchString(8, rang.Name, sizeof(Rangs::Name));
+        Ranks rank;
+        rank.GangID = gangid;
+        rank.RankID = results.FetchInt(0);
+        rank.Level = results.FetchInt(1);
+        rank.Invite = view_as<bool>(results.FetchInt(2));
+        rank.Kick = view_as<bool>(results.FetchInt(3));
+        rank.Promote = view_as<bool>(results.FetchInt(4));
+        rank.Demote = view_as<bool>(results.FetchInt(5));
+        rank.Upgrade = view_as<bool>(results.FetchInt(6));
+        rank.Manager = view_as<bool>(results.FetchInt(7));
+        results.FetchString(8, rank.Name, sizeof(Ranks::Name));
 
         if (g_bDebug)
         {
-            LogMessage("(Query_Select_GangRangs) Added \"%s\" to gang rangs cache (GangID: %d, RangID: %d, Level: %d, Invite: %d, Kick: %d, Promote: %d, Demote: %d, Upgrade: %d, Manager: %d).", rang.Name, rang.GangID, rang.RangID, rang.Level, rang.Invite, rang.Kick, rang.Promote, rang.Demote, rang.Upgrade, rang.Manager);
+            LogMessage("(Query_Select_GangRanks) Added \"%s\" to gang ranks cache (GangID: %d, RankID: %d, Level: %d, Invite: %d, Kick: %d, Promote: %d, Demote: %d, Upgrade: %d, Manager: %d).", rank.Name, rank.GangID, rank.RankID, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
         }
 
-        g_aGangRangs.PushArray(rang, sizeof(rang));
+        g_aGangRanks.PushArray(rank, sizeof(rank));
     }
 }

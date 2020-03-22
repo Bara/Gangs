@@ -42,11 +42,11 @@ void ShowGangMenu(int client)
     {
         menu.AddItem("leave", "Leave gang");
     }
-    /* else
+    else
     {
-        menu.AddItem("delete", "Delete gang");
         menu.AddItem("transfer", "Transfer ownership");
-    } */
+        // menu.AddItem("delete", "Delete gang");
+    }
     
     menu.ExitBackButton = false;
     menu.ExitButton = true;
@@ -71,6 +71,10 @@ public int Menu_GangMain(Menu menu, MenuAction action, int client, int param)
         else if (StrEqual(sParam, "leave", false))
         {
             ShowGangLeaveConfirmation(client);
+        }
+        else if (StrEqual(sParam, "transfer", false))
+        {
+            ShowTransferPlayerlist(client);
         }
     }
     else if (action == MenuAction_End)
@@ -125,7 +129,7 @@ public int Menu_GangOnlinePlayers(Menu menu, MenuAction action, int client, int 
 void ShowGangPlayers(int client)
 {
     char sQuery[256];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT players.name, gang_rangs.rang FROM players, gang_players, gang_rangs WHERE gang_players.gangid = '%d' AND gang_players.playerid = players.id AND gang_players.rang = gang_rangs.id;", g_pPlayer[client].GangID);
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT players.name, gang_ranks.rank FROM players, gang_players, gang_ranks WHERE gang_players.gangid = '%d' AND gang_players.playerid = players.id AND gang_players.rank = gang_ranks.id;", g_pPlayer[client].GangID);
     g_dDB.Query(menu_Query_Select_GangPlayers, sQuery, GetClientUserId(client));
 }
 
@@ -150,15 +154,15 @@ public void menu_Query_Select_GangPlayers(Database db, DBResultSet results, cons
             menu.SetTitle("%s | %s\nAll players:\n ", sPrefix, sName);
 
             char sPlayer[MAX_NAME_LENGTH];
-            char sRang[24];
+            char sRank[24];
             char sText[MAX_NAME_LENGTH + 32];
 
             while (results.FetchRow())
             {
                 results.FetchString(0, sPlayer, sizeof(sPlayer));
-                results.FetchString(1, sRang, sizeof(sRang));
+                results.FetchString(1, sRank, sizeof(sRank));
 
-                Format(sText, sizeof(sText), "%s | %s", sRang, sPlayer);
+                Format(sText, sizeof(sText), "%s | %s", sRank, sPlayer);
                 menu.AddItem("", sText, ITEMDRAW_DISABLED);
             }
 
