@@ -37,13 +37,6 @@ public int Menu_GangLeave(Menu menu, MenuAction action, int client, int param)
 
 void LeaveGang(int client)
 {
-    /*
-        TODO:
-            - Config: Remove invites
-                - Array: Invite::InviterID
-                - MySQL: gang_invites (UPDATE)
-    */
-
     char sQuery[256];
     g_dDB.Format(sQuery, sizeof(sQuery), "INSERT INTO `gang_logs_players` (`gangid`, `time`, `playerid`, `join`, `reason`) VALUES ('%d', UNIX_TIMESTAMP(), '%d', '0', \"Leave\");", g_pPlayer[client].GangID, g_pPlayer[client].PlayerID);
     
@@ -111,7 +104,7 @@ public void Query_Delete_GangPlayer(Database db, DBResultSet results, const char
         CPrintToChat(client, "Chat - You left the gang.");
     }
 
-    RemoveInactiveGangFromArrays();
+    RemoveInactiveGangFromArrays(iGang);
 }
 
 void RemoveInviterInvitesFromArray(int client)

@@ -349,57 +349,73 @@ bool AreGangRangsLoaded(int gangid)
     return false;
 }
 
-void RemoveInactiveGangFromArrays()
+void RemoveInactiveGangFromArrays(int gangid)
+{
+    if (gangid == -1)
+    {
+        LoopArray(g_aGangs, i)
+        {
+            Gang gang;
+            g_aGangs.GetArray(i, gang, sizeof(gang));
+
+            CheckGang(gang.GangID);
+        }
+    }
+    else
+    {
+        CheckGang(gangid);
+    }
+}
+
+void CheckGang(int gangid = -1)
 {
     bool bPlayers = false;
     bool bInvites = false;
 
-    LoopArray(g_aGangs, i)
+    char sName[MAX_GANGS_NAME_LENGTH];
+
+    GetGangName(gangid, sName, sizeof(sName));
+
+    LoopClients(client)
     {
-        Gang gang;
-        g_aGangs.GetArray(i, gang, sizeof(gang));
-
-        LoopClients(client)
+        if (!g_pPlayer[client].Leaving && g_pPlayer[client].GangID == gangid)
         {
-            if (!g_pPlayer[client].Leaving && g_pPlayer[client].GangID == gang.GangID)
-            {
-                bPlayers = true;
-                break;
-            }
+            bPlayers = true;
+            break;
+        }
+    }
+
+    if (!bPlayers)
+    {
+        if (g_bDebug)
+        {
+            LogMessage("No players found... Removing rangs and settings for %s.", sName);
         }
 
-        if (!bPlayers)
-        {
-            if (g_bDebug)
-            {
-                LogMessage("No players found... Removing rangs and settings for %s.", gang.Name);
-            }
+        RemoveRangsFromArray(gangid);
+        RemoveSettingsFromArray(gangid);
+    }
 
-            RemoveRangsFromArray(gang.GangID);
-            RemoveSettingsFromArray(gang.GangID);
+    LoopArray(g_aPlayerInvites, j)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(j, invite, sizeof(invite));
+
+        if (invite.GangID == gangid)
+        {
+            bInvites = true;
+            break;
+        }
+    }
+
+    if (!bInvites && !bPlayers)
+    {
+        if (g_bDebug)
+        {
+            LogMessage("No players or invites found... Removing %s from gangs array.", sName);
         }
 
-        LoopArray(g_aPlayerInvites, j)
-        {
-            Invite invite;
-            g_aPlayerInvites.GetArray(j, invite, sizeof(invite));
-
-            if (invite.GangID == gang.GangID)
-            {
-                bInvites = true;
-                break;
-            }
-        }
-
-        if (!bInvites && !bPlayers)
-        {
-            if (g_bDebug)
-            {
-                LogMessage("No players or invites found... Removing %s from gangs array.", gang.Name);
-            }
-
-            RemoveGangFromArray(gang.GangID);
-        }
+        RemoveGangFromArray(gangid);
     }
 }
 

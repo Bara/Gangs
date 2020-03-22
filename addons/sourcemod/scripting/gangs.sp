@@ -77,7 +77,7 @@ public void OnClientDisconnect(int client)
     g_pPlayer[client].Leaving = true;
 
     invite_OnClientDisconnect(client);
-    RemoveInactiveGangFromArrays();
+    RemoveInactiveGangFromArrays(g_pPlayer[client].GangID);
 
     g_pPlayer[client].Leaving = false;
 }
