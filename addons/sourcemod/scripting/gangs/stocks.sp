@@ -424,7 +424,7 @@ void CheckGang(int gangid = -1)
 
 void RemoveRangsFromArray(int gangid)
 {
-    LoopArray(g_aGangRangs, i)
+    LoopArrayNegative(g_aGangRangs, i)
     {
         Rangs rang;
         g_aGangRangs.GetArray(i, rang, sizeof(rang));
@@ -438,7 +438,7 @@ void RemoveRangsFromArray(int gangid)
 
 void RemoveSettingsFromArray(int gangid)
 {
-    LoopArray(g_aGangSettings, i)
+    LoopArrayNegative(g_aGangSettings, i)
     {
         Settings setting;
         g_aGangSettings.GetArray(i, setting, sizeof(setting));
@@ -452,7 +452,7 @@ void RemoveSettingsFromArray(int gangid)
 
 void RemoveGangFromArray(int gangid)
 {
-    LoopArray(g_aGangs, i)
+    LoopArrayNegative(g_aGangs, i)
     {
         Gang gang;
         g_aGangs.GetArray(i, gang, sizeof(gang));

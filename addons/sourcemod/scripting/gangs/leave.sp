@@ -109,7 +109,7 @@ public void Query_Delete_GangPlayer(Database db, DBResultSet results, const char
 
 void RemoveInviterInvitesFromArray(int client)
 {
-    LoopArray(g_aPlayerInvites, i)
+    LoopArrayNegative(g_aPlayerInvites, i)
     {
         Invite invite;
         g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));

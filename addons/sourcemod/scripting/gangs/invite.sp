@@ -306,7 +306,7 @@ bool DoesPlayerInviteExist(int target, int gangid = -1)
 
 void RemovePlayerInvitesFromArray(int client, int gangid = -1)
 {
-    LoopArray(g_aPlayerInvites, i)
+    LoopArrayNegative(g_aPlayerInvites, i)
     {
         Invite invite;
         g_aPlayerInvites.GetArray(i, invite, sizeof(Invite));

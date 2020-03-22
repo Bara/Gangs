@@ -14,6 +14,7 @@
 
 #define LoopClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
 #define LoopArray(%1,%2) for (int %2 = 0; %2 < %1.Length; %2++)
+#define LoopArrayNegative(%1,%2) for (int %2 = %1.Length-1; %2 >= 0; %2--)
 
 enum Permissions
 {
