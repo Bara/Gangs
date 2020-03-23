@@ -72,7 +72,7 @@ jobs:
         working-directory: ./build
 
       - name: Compress package
-        run: 7z a -r -p$GITHUB_SHA -mx=9 -mhe -t7z Gangs.${{ env.PLUGIN_VERSION }}.zip *
+        run: zip -9rq Gangs.${{ env.PLUGIN_VERSION }}.zip *
         working-directory: ./build
 
       - name: Upload package
