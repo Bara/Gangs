@@ -400,6 +400,20 @@ void CheckGang(int gangid = -1)
     }
 }
 
+void RemoveInvitesFromArray(int gangid)
+{
+    LoopArrayNegative(g_aPlayerInvites, i)
+    {
+        Invite invite;
+        g_aPlayerInvites.GetArray(i, invite, sizeof(invite));
+
+        if (invite.GangID == gangid)
+        {
+            g_aPlayerInvites.Erase(i);
+        }
+    }
+}
+
 void RemoveRanksFromArray(int gangid)
 {
     LoopArrayNegative(g_aGangRanks, i)

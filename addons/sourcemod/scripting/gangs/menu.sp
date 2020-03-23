@@ -45,7 +45,7 @@ void ShowGangMenu(int client)
     else
     {
         menu.AddItem("transfer", "Transfer ownership");
-        // menu.AddItem("delete", "Delete gang");
+        menu.AddItem("delete", "Delete gang");
     }
     
     menu.ExitBackButton = false;
@@ -75,6 +75,10 @@ public int Menu_GangMain(Menu menu, MenuAction action, int client, int param)
         else if (StrEqual(sParam, "transfer", false))
         {
             ShowTransferPlayerlist(client);
+        }
+        else if (StrEqual(sParam, "delete", false))
+        {
+            ConfirmGangDeletion(client);
         }
     }
     else if (action == MenuAction_End)

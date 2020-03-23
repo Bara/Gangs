@@ -334,15 +334,15 @@ public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] er
         pack.WriteCell(aRanks);
         pack.WriteString(gang.Name);
         pack.WriteString(gang.Prefix);
-        g_dDB.Execute(action, TXN_OnSuccess, TXN_OnError, pack);
+        g_dDB.Execute(action, create_TXN_OnSuccess, create_TXN_OnError, pack);
     }
 }
 
-public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSet[] results, any[] queryData)
+public void create_TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSet[] results, any[] queryData)
 {
     if (g_bDebug)
     {
-        LogMessage("(TXN_OnSuccess) numQueries: %d", numQueries);
+        LogMessage("(create_TXN_OnSuccess) numQueries: %d", numQueries);
     }
 
     pack.Reset();
@@ -359,7 +359,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
     {
         if (g_bDebug)
         {
-            LogMessage("(TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
+            LogMessage("(create_TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
         }
 
         if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
@@ -394,7 +394,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
             {
                 if (g_bDebug)
                 {
-                    LogMessage("(TXN_OnSuccess) ID for Rank Owner should be %d.", iRank);
+                    LogMessage("(create_TXN_OnSuccess) ID for Rank Owner should be %d.", iRank);
                 }
 
                 pack = new DataPack();
@@ -409,7 +409,7 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
 
                 if (g_bDebug)
                 {
-                    LogMessage("(TXN_OnSuccess) \"%L\": \"%s\"", client, sQuery);
+                    LogMessage("(create_TXN_OnSuccess) \"%L\": \"%s\"", client, sQuery);
                 }
 
                 g_dDB.Query(Query_Insert_PlayerOwner, sQuery, pack);
@@ -420,9 +420,9 @@ public void TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBResultSe
     // TODO: Reset
 }
 
-public void TXN_OnError(Database db, DataPack pack, int numQueries, const char[] error, int failIndex, any[] queryData)
+public void create_TXN_OnError(Database db, DataPack pack, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
-    LogError("(TXN_OnError) Error executing query (rank level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
+    LogError("(create_TXN_OnError) Error executing query (rank level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
     delete pack;
 }
 

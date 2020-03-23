@@ -19,6 +19,7 @@ bool g_bDebug = true;
 #include "gangs/invite.sp"
 #include "gangs/leave.sp"
 #include "gangs/transfer.sp"
+#include "gangs/delete.sp"
 
 public Plugin myinfo =
 {
