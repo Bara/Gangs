@@ -96,7 +96,7 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
         kvConfig.GoBack();
     }
     kvConfig.GoBack();
-
+    delete kvConfig;
 
     char sQuery[1024];
     for (int i = 0; i < aRanks.Length; i++)
@@ -118,42 +118,23 @@ ArrayList AddRanksToTransaction(int gangid, Transaction action)
         action.AddQuery(sQuery, rank.Level);
     }
 
-    delete kvConfig;
     return aRanks;
 }
 
 bool GetGangName(int id, char[] name, int length)
 {
-    LoopArray(g_aGangs, i)
-    {
-        Gang gang;
-        g_aGangs.GetArray(i, gang, sizeof(Gang));
+    Gang gang;
+    g_iGangs.GetArray(id, gang, sizeof(Gang));
 
-        if (gang.GangID == id)
-        {
-            Format(name, length, gang.Name);
-            return true;
-        }
-    }
-
-    return false;
+    strcopy(name, length, gang.Name);
 }
 
 bool GetGangPrefix(int id, char[] name, int length)
 {
-    LoopArray(g_aGangs, i)
-    {
-        Gang gang;
-        g_aGangs.GetArray(i, gang, sizeof(Gang));
+    Gang gang;
+    g_iGangs.GetArray(id, gang, sizeof(Gang));
 
-        if (gang.GangID == id)
-        {
-            Format(name, length, gang.Prefix);
-            return true;
-        }
-    }
-
-    return false;
+    strcopy(name, length, gang.Prefix);
 }
 
 void InsertGangLogs(int gangid, int playerid, const char[] type)
@@ -202,10 +183,12 @@ public void Query_Insert_GangPlayerLogs(Database db, DBResultSet results, const 
 
 bool HasClientPermission(int client, Permissions perm)
 {
-    LoopArray(g_aGangRanks, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(Ranks));
+        g_iGangRanks.GetArray(i, rank, sizeof(rank));
 
         if (rank.GangID == g_pPlayer[client].GangID && rank.RankID == g_pPlayer[client].RankID)
         {
@@ -228,7 +211,8 @@ bool HasClientPermission(int client, Permissions perm)
             else if (perm == PERM_UPGRADE && rank.Upgrade)
             {
                 return true;
-            }else if (perm == PERM_MANAGER && rank.Manager)
+            }
+            else if (perm == PERM_MANAGER && rank.Manager)
             {
                 return true;
             }
@@ -281,49 +265,47 @@ void CPrintToGang(int gangid, const char[] message, any ...)
 
 bool IsGangValid(int gangid)
 {
-    LoopArray(g_aGangs, i)
-    {
-        Gang gang;
-        g_aGangs.GetArray(i, gang, sizeof(gang));
-
-        if (gang.GangID == gangid)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    Gang gang;
+    return g_iGangs.GetArray(gangid, gang, sizeof(Gang));
 }
 
 bool AreGangSettingsLoaded(int gangid)
 {
-    LoopArray(g_aGangSettings, i)
+    IntMapSnapshot snapshot = g_iGangSettings.Snapshot();
+    Settings setting;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Settings setting;
-        g_aGangSettings.GetArray(i, setting, sizeof(setting));
+        g_iGangSettings.GetArray(i, setting, sizeof(Settings));
 
         if (setting.GangID == gangid)
         {
+            delete snapshot;
             return true;
         }
     }
 
+    delete snapshot;
     return false;
 }
 
 bool AreGangRanksLoaded(int gangid)
 {
-    LoopArray(g_aGangRanks, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(rank));
+        g_iGangRanks.GetArray(i, rank, sizeof(Ranks));
 
         if (rank.GangID == gangid)
         {
+            delete snapshot;
             return true;
         }
     }
 
+    delete snapshot;
     return false;
 }
 
@@ -331,13 +313,17 @@ void RemoveInactiveGangFromArrays(int gangid)
 {
     if (gangid == -1)
     {
-        LoopArray(g_aGangs, i)
+        IntMapSnapshot snapshot = g_iGangs.Snapshot();
+        Gang gang;
+        
+        for (int i = 0; i < snapshot.Length; i++)
         {
-            Gang gang;
-            g_aGangs.GetArray(i, gang, sizeof(gang));
+            g_iGangs.GetArray(i, gang, sizeof(Gang));
 
             CheckGang(gang.GangID);
         }
+
+        delete snapshot;
     }
     else
     {
@@ -416,73 +402,76 @@ void RemoveInvitesFromArray(int gangid)
 
 void RemoveRanksFromArray(int gangid)
 {
-    LoopArrayNegative(g_aGangRanks, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(rank));
+        g_iGangRanks.GetArray(i, rank, sizeof(Ranks));
 
         if (rank.GangID == gangid)
         {
-            g_aGangRanks.Erase(i);
+            g_iGangRanks.Remove(rank.RankID);
         }
     }
+
+    delete snapshot;
 }
 
 void RemoveSettingsFromArray(int gangid)
 {
-    LoopArrayNegative(g_aGangSettings, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Settings setting;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Settings setting;
-        g_aGangSettings.GetArray(i, setting, sizeof(setting));
+        g_iGangSettings.GetArray(i, setting, sizeof(Settings));
 
         if (setting.GangID == gangid)
         {
-            g_aGangSettings.Erase(i);
+            g_iGangSettings.Remove(setting.SettingID);
         }
     }
+
+    delete snapshot;
 }
 
 void RemoveGangFromArray(int gangid)
 {
-    LoopArrayNegative(g_aGangs, i)
-    {
-        Gang gang;
-        g_aGangs.GetArray(i, gang, sizeof(gang));
-
-        if (gang.GangID == gangid)
-        {
-            g_aGangs.Erase(i);
-        }
-    }
+    g_iGangs.Remove(gangid);
 }
 
 bool IsClientOwner(int client)
 {
-    bool bOwner = false;
-    LoopArray(g_aGangRanks, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(rank));
+        g_iGangRanks.GetArray(i, rank, sizeof(rank));
 
         if (g_pPlayer[client].GangID == rank.GangID && g_pPlayer[client].RankID == rank.RankID)
         {
             if (StrEqual(rank.Name, "Owner", false))
             {
-                bOwner = true;
-                break;
+                delete snapshot;
+                return true;
             }
         }
     }
 
-    return bOwner;
+    delete snapshot;
+    return false;
 }
 
 int GetTrialRankID(int gangid)
 {
-    LoopArray(g_aGangRanks, i)
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
     {
-        Ranks rank;
-        g_aGangRanks.GetArray(i, rank, sizeof(rank));
+        g_iGangRanks.GetArray(i, rank, sizeof(rank));
 
         if (rank.GangID == gangid && StrEqual(rank.Name, "Trial", false))
         {
@@ -491,4 +480,56 @@ int GetTrialRankID(int gangid)
     }
 
     return -1;
+}
+
+bool GetRankName(int gangid, int rankid, char[] rankname, int length)
+{
+    IntMapSnapshot snapshot = g_iGangRanks.Snapshot();
+    Ranks rank;
+
+    for (int i = 0; i < snapshot.Length; i++)
+    {
+        g_iGangRanks.GetArray(i, rank, sizeof(rank));
+
+        if (rank.GangID == gangid && rank.RankID == rankid)
+        {
+            strcopy(rankname, length, rank.Name);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int GetGangSlots(int gangid)
+{
+    IntMapSnapshot snapshot = g_iGangSettings.Snapshot();
+    Settings setting;
+
+    for (int i = 0; i < snapshot.Length; i++)
+    {
+        g_iGangSettings.GetArray(i, setting, sizeof(setting));
+
+        if (setting.GangID == gangid && StrEqual(setting.Key, "slots", false))
+        {
+            return StringToInt(setting.Value);
+        }
+    }
+
+    return -1;
+}
+
+int GetGangOnlineCount(int gangid)
+{
+    int iCount = 0;
+    
+    LoopClients(client)
+    {
+        if (g_pPlayer[client].GangID == gangid)
+        {
+            iCount++;
+        }
+    }
+
+    return iCount;
 }

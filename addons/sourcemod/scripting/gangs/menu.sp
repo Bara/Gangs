@@ -23,10 +23,17 @@ public Action Command_Gang(int client, int args)
 
 void ShowGangMenu(int client)
 {
-    char sName[MAX_GANGS_NAME_LENGTH], sPrefix[MAX_GANGS_PREFIX_LENGTH];
+    Profiler profiler = new Profiler();
+    profiler.Start();
 
+    char sName[MAX_GANGS_NAME_LENGTH], sPrefix[MAX_GANGS_PREFIX_LENGTH], sRank[sizeof(Rank::Name)];
+
+    int iSlots = GetGangSlots(g_pPlayer[client].GangID);
     GetGangName(g_pPlayer[client].GangID, sName, sizeof(sName));
     GetGangPrefix(g_pPlayer[client].GangID, sPrefix, sizeof(sPrefix));
+    
+    int iOnline = GetGangOnlineCount(g_pPlayer[client].GangID);
+    GetRankName(g_pPlayer[client].GangID, g_pPlayer[client].RankID, sRank, sizeof(sRank));
 
     if (g_bDebug)
     {
@@ -34,9 +41,9 @@ void ShowGangMenu(int client)
     }
 
     Menu menu = new Menu(Menu_GangMain);
-    menu.SetTitle("%s | %s\n ", sPrefix, sName);
+    menu.SetTitle("%s | %s\n \nOnline: %d/%d\nPoints: %d\n \nYour rank: %s", sPrefix, sName, iOnline, iSlots, sRank);
     menu.AddItem("online", "Online players");
-    menu.AddItem("players", "All players");
+    menu.AddItem("players", "All players\n ");
 
     if (!IsClientOwner(client))
     {
@@ -51,6 +58,10 @@ void ShowGangMenu(int client)
     menu.ExitBackButton = false;
     menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
+
+    profiler.Stop();
+    PrintToChat(client, "Time elapsed to build this menu: %.f seconds", profiler.Time);
+    delete profiler;
 }
 
 public int Menu_GangMain(Menu menu, MenuAction action, int client, int param)

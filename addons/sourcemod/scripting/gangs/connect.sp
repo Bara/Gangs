@@ -28,11 +28,13 @@ static char sQueries[][1024] = {
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
     "CREATE TABLE IF NOT EXISTS `gang_settings` (" ...
+        "`id` INT NOT NULL AUTO_INCREMENT," ...
         "`gangid` INT NOT NULL," ...
         "`key` VARCHAR(32) COLLATE utf8mb4_unicode_ci NOT NULL," ...
         "`value` VARCHAR(128) COLLATE utf8mb4_unicode_ci NOT NULL," ...
         "`purchased` TINYINT NOT NULL," ...
         "UNIQUE KEY (`gangid`, `key`)" ...
+        "PRIMARY KEY (`id`)" ...
     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
     "CREATE TABLE IF NOT EXISTS `gang_ranks` (" ...
@@ -198,13 +200,13 @@ public void Query_CreateTable(Database db, DBResultSet results, const char[] err
 
     if (iCount == iTables)
     {
-        delete g_aGangs;
-        delete g_aGangSettings;
-        delete g_aGangRanks;
+        delete g_iGangs;
+        delete g_iGangSettings;
+        delete g_iGangRanks;
 
-        g_aGangs = new ArrayList(sizeof(Gang));
-        g_aGangSettings = new ArrayList(sizeof(Settings));
-        g_aGangRanks = new ArrayList(sizeof(Ranks));
+        g_iGangs = new IntMap();
+        g_iGangSettings = new IntMap();
+        g_iGangRanks = new IntMap();
         g_aPlayerInvites = new ArrayList(sizeof(Invite));
 
         LateLoadPlayers(); // TODO: Move this when gang stuff is completely loaded
@@ -356,15 +358,10 @@ void LoadGang(int gangid)
         LogMessage("(LoadGang) Query: \"%s\"", sQuery);
     }
 
-    Gang gang;
-    gang.GangID = gangid;
-
-    int iIndex = g_aGangs.PushArray(gang, sizeof(gang));
-
-    g_dDB.Query(Query_Select_Gangs, sQuery, iIndex);
+    g_dDB.Query(Query_Select_Gangs, sQuery, gangid);
 }
 
-public void Query_Select_Gangs(Database db, DBResultSet results, const char[] error, int index)
+public void Query_Select_Gangs(Database db, DBResultSet results, const char[] error, int gangid)
 {
     if (!IsValidDatabase(db, error))
     {
@@ -387,14 +384,14 @@ public void Query_Select_Gangs(Database db, DBResultSet results, const char[] er
             LogMessage("(Query_Select_Gangs) Added \"%s\" to gangs cache (GangID: %d, Prefix: %s, Created: %d, Points: %d, Founder: %d).", gang.Name, gang.GangID, gang.Prefix, gang.Created, gang.Points, gang.Founder);
         }
 
-        g_aGangs.SetArray(index, gang, sizeof(gang));
+        g_iGangs.SetArray(gang.GangID, gang, sizeof(gang));
     }
 }
 
 void LoadSettings(int gangid)
 {
     char sQuery[128];
-    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `key`, `value`, `purchased` FROM `gang_settings` WHERE `gangid` = '%d';", gangid);
+    g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `key`, `value`, `purchased` FROM `gang_settings` WHERE `gangid` = '%d';", gangid);
 
     if (g_bDebug)
     {
@@ -415,17 +412,18 @@ public void Query_Select_GangSettings(Database db, DBResultSet results, const ch
     while (results.FetchRow())
     {
         Settings setting;
+        setting.SettingID = results.FetchInt(0);
         setting.GangID = gangid;
-        results.FetchString(0, setting.Key, sizeof(Settings::Key));
-        results.FetchString(1, setting.Value, sizeof(Settings::Value));
-        setting.Bought = view_as<bool>(results.FetchInt(2));
+        results.FetchString(1, setting.Key, sizeof(Settings::Key));
+        results.FetchString(2, setting.Value, sizeof(Settings::Value));
+        setting.Bought = view_as<bool>(results.FetchInt(3));
 
         if (g_bDebug)
         {
             LogMessage("(Query_Select_GangSettings) Added \"%s\" to gang settings cache (GangID: %d, Value: %s, Bought: %d).", setting.Key, setting.GangID, setting.Value, setting.Bought);
         }
 
-        g_aGangSettings.PushArray(setting, sizeof(setting));
+        g_iGangSettings.SetArray(setting.SettingID, setting, sizeof(setting));
     }
 }
 
@@ -469,6 +467,6 @@ public void Query_Select_GangRanks(Database db, DBResultSet results, const char[
             LogMessage("(Query_Select_GangRanks) Added \"%s\" to gang ranks cache (GangID: %d, RankID: %d, Level: %d, Invite: %d, Kick: %d, Promote: %d, Demote: %d, Upgrade: %d, Manager: %d).", rank.Name, rank.GangID, rank.RankID, rank.Level, rank.Invite, rank.Kick, rank.Promote, rank.Demote, rank.Upgrade, rank.Manager);
         }
 
-        g_aGangRanks.PushArray(rank, sizeof(rank));
+        g_iGangRanks.SetArray(rank.RankID , rank, sizeof(rank));
     }
 }

@@ -3,7 +3,7 @@ Database g_dDB = null;
 Player g_pPlayer[MAXPLAYERS + 1];
 Configs Config;
 
-ArrayList g_aGangs = null;
-ArrayList g_aGangRanks = null;
-ArrayList g_aGangSettings = null;
+IntMap g_iGangs = null;
+IntMap g_iGangRanks = null;
+IntMap g_iGangSettings = null;
 ArrayList g_aPlayerInvites = null;

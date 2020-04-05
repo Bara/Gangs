@@ -305,7 +305,7 @@ public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] er
         strcopy(gang.Prefix, sizeof(Gang::Prefix), sPrefix);
         gang.Points = 0;
         gang.Founder = g_pPlayer[client].PlayerID;
-        g_aGangs.PushArray(gang, sizeof(gang));
+        g_iGangs.SetArray(iGang, gang, sizeof(gang));
 
         Transaction action = new Transaction();
 
@@ -384,9 +384,11 @@ public void create_TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBR
                     rRank.Demote = rank.Demote;
                     rRank.Upgrade = rank.Upgrade;
                     rRank.Manager = rank.Manager;
-                    g_aGangRanks.PushArray(rRank, sizeof(rRank));
+                    g_iGangRanks.SetArray(iRank, rRank, sizeof(rRank));
                 }
             }
+
+            delete aRanks;
 
             int client = GetClientOfUserId(userid);
 
@@ -423,6 +425,11 @@ public void create_TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBR
 public void create_TXN_OnError(Database db, DataPack pack, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
     LogError("(create_TXN_OnError) Error executing query (rank level: %d) %d of %d queries: %s", queryData[failIndex], failIndex, numQueries, error);
+
+    pack.Reset();
+    pack.ReadCell();
+    pack.ReadCell();
+    delete view_as<ArrayList>(pack.ReadCell());
     delete pack;
 }
 

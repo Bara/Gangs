@@ -16,6 +16,7 @@ enum struct Gang {
 }
 
 enum struct Settings {
+    int SettingID;
     int GangID;
     bool Bought;
     char Key[32];

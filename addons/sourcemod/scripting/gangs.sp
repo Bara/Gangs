@@ -2,7 +2,9 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <profiler>
 #include <regex>
+#include <intmap>
 #include <autoexecconfig>
 #include <multicolors>
 #include <gangs>
