@@ -317,14 +317,7 @@ public void Query_Insert_Gangs(Database db, DBResultSet results, const char[] er
             LogMessage("(Query_Insert_Gangs) \"%L\": \"%s\"", client, sQuery);
         }
 
-        action.AddQuery(sQuery, -1);
-
-        Settings setting;
-        setting.GangID = iGang;
-        Format(setting.Key, sizeof(Settings::Key), "slots");
-        Config.StartSlots.GetString(setting.Value, sizeof(Settings::Value));
-        setting.Bought = true;
-        g_aGangSettings.PushArray(setting, sizeof(setting));
+        action.AddQuery(sQuery, 0);
 
         ArrayList aRanks = AddRanksToTransaction(iGang, action);
 
@@ -362,33 +355,46 @@ public void create_TXN_OnSuccess(Database db, DataPack pack, int numQueries, DBR
             LogMessage("(create_TXN_OnSuccess) queryData[%d] - Process: %d", i, queryData[i]);
         }
 
-        if (queryData[i] >= 1 && queryData[i] <= Config.MaxLevel.IntValue)
+        if (queryData[i] <= Config.MaxLevel.IntValue)
         {
             int iRank = results[i].InsertId;
 
-            Ranks rRank;
-            for (int j = 0; j < aRanks.Length; j++)
+            if (queryData[i] > 0)
             {
-                Rank rank;
-                aRanks.GetArray(j, rank, sizeof(rank));
-
-                if (queryData[i] == rank.Level)
+                Ranks rRank;
+                for (int j = 0; j < aRanks.Length; j++)
                 {
-                    rRank.GangID = gangid;
-                    rRank.RankID = iRank;
-                    strcopy(rRank.Name, sizeof(Ranks::Name), rank.Name);
-                    rRank.Level = rank.Level;
-                    rRank.Invite = rank.Invite;
-                    rRank.Kick = rank.Kick;
-                    rRank.Promote = rank.Promote;
-                    rRank.Demote = rank.Demote;
-                    rRank.Upgrade = rank.Upgrade;
-                    rRank.Manager = rank.Manager;
-                    g_iGangRanks.SetArray(iRank, rRank, sizeof(rRank));
-                }
-            }
+                    Rank rank;
+                    aRanks.GetArray(j, rank, sizeof(rank));
 
-            delete aRanks;
+                    if (queryData[i] == rank.Level)
+                    {
+                        rRank.GangID = gangid;
+                        rRank.RankID = iRank;
+                        strcopy(rRank.Name, sizeof(Ranks::Name), rank.Name);
+                        rRank.Level = rank.Level;
+                        rRank.Invite = rank.Invite;
+                        rRank.Kick = rank.Kick;
+                        rRank.Promote = rank.Promote;
+                        rRank.Demote = rank.Demote;
+                        rRank.Upgrade = rank.Upgrade;
+                        rRank.Manager = rank.Manager;
+                        g_iGangRanks.SetArray(iRank, rRank, sizeof(rRank));
+                    }
+                }
+
+                delete aRanks;
+            }
+            else if (queryData[i] == 0)
+            {
+                Settings setting;
+                setting.SettingID = results[i].InsertId;
+                setting.GangID = gangid;
+                Format(setting.Key, sizeof(Settings::Key), "slots");
+                Config.StartSlots.GetString(setting.Value, sizeof(Settings::Value));
+                setting.Bought = true;
+                g_iGangSettings.SetArray(results[i].InsertId, setting, sizeof(setting));
+            }
 
             int client = GetClientOfUserId(userid);
 
