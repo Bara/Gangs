@@ -4,6 +4,14 @@ enum struct Player {
     int RankID;
     bool Leaving;
     char CommunityID[18];
+    
+    bool Reset()
+    {
+        this.PlayerID = -1;
+        this.GangID = -1;
+        this.RankID = -1;
+        this.Leaving = false;
+    }
 }
 
 enum struct Gang {

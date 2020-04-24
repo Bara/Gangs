@@ -23,7 +23,7 @@ bool g_bDebug = true;
 #include "gangs/transfer.sp"
 #include "gangs/delete.sp"
 
-public Plugin myinfo =
+public Plugin myinfo = 
 {
     name = GANGS_PLUGIN_NAME, 
     author = GANGS_PLUGIN_AUTHOR, 
@@ -54,34 +54,31 @@ public void OnClientPutInServer(int client)
     {
         return;
     }
-
+    
     if (!GetClientAuthId(client, AuthId_SteamID64, g_pPlayer[client].CommunityID, sizeof(Player::CommunityID)))
     {
         return;
     }
-
-    g_pPlayer[client].PlayerID = -1;
-    g_pPlayer[client].GangID = -1;
-    g_pPlayer[client].RankID = -1;
-    g_pPlayer[client].Leaving = false;
-
+    
+    g_pPlayer[client].Reset();
+    
     char sQuery[128];
     g_dDB.Format(sQuery, sizeof(sQuery), "SELECT `id`, `communityid`, `name` FROM `players` WHERE `communityid` = \"%s\";", g_pPlayer[client].CommunityID);
-
+    
     if (g_bDebug)
     {
         LogMessage("(OnClientPutInServer) \"%L\": \"%s\"", client, sQuery);
     }
-
+    
     g_dDB.Query(Query_Select_Player, sQuery, GetClientUserId(client));
 }
 
 public void OnClientDisconnect(int client)
 {
     g_pPlayer[client].Leaving = true;
-
+    
     invite_OnClientDisconnect(client);
     RemoveInactiveGangFromArrays(g_pPlayer[client].GangID);
-
+    
     g_pPlayer[client].Leaving = false;
 }
